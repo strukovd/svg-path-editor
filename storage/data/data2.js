@@ -1,0 +1,568 @@
+data = {
+	"isDraft": false,
+	"layout": {
+		"statuses": [
+			{
+				"id": "S<9>",
+				"name": "ZALK Подсчет суммы оплаты",
+				"initial": false,
+				"stepId": 9,
+				"statusId": "13105",
+				"x": 695.046875,
+				"y": 358.79998474121095,
+				"statusCategory": {
+					"colourName": "yellow",
+					"id": 4
+				}
+			},
+			{
+				"id": "S<6>",
+				"name": "ZALK Клиент ушел",
+				"initial": false,
+				"stepId": 6,
+				"statusId": "13108",
+				"x": 731.1328125,
+				"y": 589.5999822998047,
+				"statusCategory": {
+					"colourName": "green",
+					"id": 3
+				}
+			},
+			{
+				"id": "S<2>",
+				"name": "ZALK Выбор напитка",
+				"initial": false,
+				"stepId": 2,
+				"statusId": "13102",
+				"x": 722.030517578125,
+				"y": 219.59999755859377,
+				"statusCategory": {
+					"colourName": "yellow",
+					"id": 4
+				}
+			},
+			{
+				"id": "S<8>",
+				"name": "ZALK Оплачено",
+				"initial": false,
+				"stepId": 8,
+				"statusId": "13107",
+				"x": 739.66064453125,
+				"y": 510.5999822998047,
+				"statusCategory": {
+					"colourName": "blue-gray",
+					"id": 2
+				}
+			},
+			{
+				"id": "S<10>",
+				"name": "ZALK Возвращено",
+				"initial": false,
+				"stepId": 10,
+				"statusId": "13119",
+				"x": 883.33935546875,
+				"y": 67.80000000000001,
+				"statusCategory": {
+					"colourName": "green",
+					"id": 3
+				}
+			},
+			{
+				"id": "I<1>",
+				"name": "Create",
+				"initial": true,
+				"stepId": 1,
+				"x": 796.5,
+				"y": 67.80000000000001
+			},
+			{
+				"id": "S<5>",
+				"name": "ZALK Клиент определился",
+				"initial": false,
+				"stepId": 5,
+				"statusId": "13104",
+				"x": 704.8134765625,
+				"y": 286.5999822998047,
+				"statusCategory": {
+					"colourName": "yellow",
+					"id": 4
+				}
+			},
+			{
+				"id": "S<7>",
+				"name": "ZALK Ожидание оплаты",
+				"initial": false,
+				"stepId": 7,
+				"statusId": "13106",
+				"x": 712.6328125,
+				"y": 432.5999822998047,
+				"statusCategory": {
+					"colourName": "yellow",
+					"id": 4
+				}
+			},
+			{
+				"id": "S<4>",
+				"name": "ZALK Клиент в павильоне",
+				"initial": false,
+				"stepId": 4,
+				"statusId": "13101",
+				"x": 706.6015625,
+				"y": 149.59999755859377,
+				"statusCategory": {
+					"colourName": "blue-gray",
+					"id": 2
+				}
+			},
+			{
+				"id": "S<3>",
+				"name": "ZALK Дать совет",
+				"initial": false,
+				"stepId": 3,
+				"statusId": "13103",
+				"x": 1003.965576171875,
+				"y": 219.59999755859377,
+				"statusCategory": {
+					"colourName": "yellow",
+					"id": 4
+				}
+			}
+		],
+		"transitions": [
+			{
+				"id": "A<31:S<3>:S<5>>",
+				"name": "Товар выбран",
+				"sourceId": "S<3>",
+				"targetId": "S<5>",
+				"actionId": 31, // workflowTransition
+				"initial": false,
+				"description": "",
+				"globalTransition": false,
+				"loopedTransition": false,
+				"sourceAngle": 78.11134196037203,
+				"targetAngle": 2.069659619844568,
+				"transitionOptions": [
+					{
+						"key": "properties.key",
+						"name": "Свойства",
+						"count": 0,
+						"url": "/secure/admin/workflows/ViewWorkflowTransitionMetaAttributes.jspa?workflowMode=live&workflowName=ZALK+Sale+alkohol&workflowTransition=31",
+						"weight": 10
+					},
+					{
+						"key": "com.atlassian.jira.plugin.system.workfloweditor.transition.tabs:conditions",
+						"name": "Условия",
+						"count": 0,
+						"url": "/secure/admin/workflows/ViewWorkflowTransition.jspa?workflowMode=live&workflowName=ZALK+Sale+alkohol&workflowTransition=31&descriptorTab=conditions",
+						"weight": 100
+					},
+					{
+						"key": "com.atlassian.jira.plugin.system.workfloweditor.transition.tabs:validators",
+						"name": "Валидаторы",
+						"count": 0,
+						"url": "/secure/admin/workflows/ViewWorkflowTransition.jspa?workflowMode=live&workflowName=ZALK+Sale+alkohol&workflowTransition=31&descriptorTab=validators",
+						"weight": 200
+					},
+					{
+						"key": "com.atlassian.jira.plugin.system.workfloweditor.transition.tabs:postfunctions",
+						"name": "Post функции",
+						"count": 5,
+						"url": "/secure/admin/workflows/ViewWorkflowTransition.jspa?workflowMode=live&workflowName=ZALK+Sale+alkohol&workflowTransition=31&descriptorTab=postfunctions",
+						"weight": 300
+					}
+				]
+			},
+			{
+				"id": "A<91:S<10>:S<10>>",
+				"name": "ZALK Возвращено",
+				"sourceId": "S<10>",
+				"targetId": "S<10>",
+				"actionId": 91,
+				"initial": false,
+				"description": "",
+				"globalTransition": true,
+				"loopedTransition": false,
+				"transitionOptions": [
+					{
+						"key": "properties.key",
+						"name": "Свойства",
+						"count": 0,
+						"url": "/secure/admin/workflows/ViewWorkflowTransitionMetaAttributes.jspa?workflowMode=live&workflowName=ZALK+Sale+alkohol&workflowTransition=91",
+						"weight": 10
+					},
+					{
+						"key": "com.atlassian.jira.plugin.system.workfloweditor.transition.tabs:conditions",
+						"name": "Условия",
+						"count": 0,
+						"url": "/secure/admin/workflows/ViewWorkflowTransition.jspa?workflowMode=live&workflowName=ZALK+Sale+alkohol&workflowTransition=91&descriptorTab=conditions",
+						"weight": 100
+					},
+					{
+						"key": "com.atlassian.jira.plugin.system.workfloweditor.transition.tabs:validators",
+						"name": "Валидаторы",
+						"count": 0,
+						"url": "/secure/admin/workflows/ViewWorkflowTransition.jspa?workflowMode=live&workflowName=ZALK+Sale+alkohol&workflowTransition=91&descriptorTab=validators",
+						"weight": 200
+					},
+					{
+						"key": "com.atlassian.jira.plugin.system.workfloweditor.transition.tabs:postfunctions",
+						"name": "Post функции",
+						"count": 5,
+						"url": "/secure/admin/workflows/ViewWorkflowTransition.jspa?workflowMode=live&workflowName=ZALK+Sale+alkohol&workflowTransition=91&descriptorTab=postfunctions",
+						"weight": 300
+					}
+				]
+			},
+			{
+				"id": "A<41:S<2>:S<5>>",
+				"name": "Товар выбран",
+				"sourceId": "S<2>",
+				"targetId": "S<5>",
+				"actionId": 41,
+				"initial": false,
+				"description": "",
+				"globalTransition": false,
+				"loopedTransition": false,
+				"sourceAngle": 78.11134196037203,
+				"targetAngle": -70.01689347810002,
+				"transitionOptions": [
+					{
+						"key": "properties.key",
+						"name": "Свойства",
+						"count": 0,
+						"url": "/secure/admin/workflows/ViewWorkflowTransitionMetaAttributes.jspa?workflowMode=live&workflowName=ZALK+Sale+alkohol&workflowTransition=41",
+						"weight": 10
+					},
+					{
+						"key": "com.atlassian.jira.plugin.system.workfloweditor.transition.tabs:conditions",
+						"name": "Условия",
+						"count": 0,
+						"url": "/secure/admin/workflows/ViewWorkflowTransition.jspa?workflowMode=live&workflowName=ZALK+Sale+alkohol&workflowTransition=41&descriptorTab=conditions",
+						"weight": 100
+					},
+					{
+						"key": "com.atlassian.jira.plugin.system.workfloweditor.transition.tabs:validators",
+						"name": "Валидаторы",
+						"count": 0,
+						"url": "/secure/admin/workflows/ViewWorkflowTransition.jspa?workflowMode=live&workflowName=ZALK+Sale+alkohol&workflowTransition=41&descriptorTab=validators",
+						"weight": 200
+					},
+					{
+						"key": "com.atlassian.jira.plugin.system.workfloweditor.transition.tabs:postfunctions",
+						"name": "Post функции",
+						"count": 5,
+						"url": "/secure/admin/workflows/ViewWorkflowTransition.jspa?workflowMode=live&workflowName=ZALK+Sale+alkohol&workflowTransition=41&descriptorTab=postfunctions",
+						"weight": 300
+					}
+				]
+			},
+			{
+				"id": "IA<1:I<1>:S<4>>",
+				"name": "Create",
+				"sourceId": "I<1>",
+				"targetId": "S<4>",
+				"actionId": 1,
+				"initial": true,
+				"globalTransition": false,
+				"loopedTransition": false,
+				"sourceAngle": 78.11134196037203,
+				"targetAngle": -70.01689347810002,
+				"transitionOptions": [
+					{
+						"key": "properties.key",
+						"name": "Свойства",
+						"count": 0,
+						"url": "/secure/admin/workflows/ViewWorkflowTransitionMetaAttributes.jspa?workflowMode=live&workflowName=ZALK+Sale+alkohol&workflowTransition=1",
+						"weight": 10
+					},
+					{
+						"key": "com.atlassian.jira.plugin.system.workfloweditor.transition.tabs:validators",
+						"name": "Валидаторы",
+						"count": 1,
+						"url": "/secure/admin/workflows/ViewWorkflowTransition.jspa?workflowMode=live&workflowName=ZALK+Sale+alkohol&workflowTransition=1&descriptorTab=validators",
+						"weight": 200
+					},
+					{
+						"key": "com.atlassian.jira.plugin.system.workfloweditor.transition.tabs:postfunctions",
+						"name": "Post функции",
+						"count": 3,
+						"url": "/secure/admin/workflows/ViewWorkflowTransition.jspa?workflowMode=live&workflowName=ZALK+Sale+alkohol&workflowTransition=1&descriptorTab=postfunctions",
+						"weight": 300
+					}
+				]
+			},
+			{
+				"id": "A<51:S<5>:S<9>>",
+				"name": "Посчитать сумму оплаты",
+				"sourceId": "S<5>",
+				"targetId": "S<9>",
+				"actionId": 51,
+				"initial": false,
+				"description": "",
+				"globalTransition": false,
+				"loopedTransition": false,
+				"sourceAngle": 78.11134196037203,
+				"targetAngle": -70.01689347810002,
+				"transitionOptions": [
+					{
+						"key": "properties.key",
+						"name": "Свойства",
+						"count": 0,
+						"url": "/secure/admin/workflows/ViewWorkflowTransitionMetaAttributes.jspa?workflowMode=live&workflowName=ZALK+Sale+alkohol&workflowTransition=51",
+						"weight": 10
+					},
+					{
+						"key": "com.atlassian.jira.plugin.system.workfloweditor.transition.tabs:conditions",
+						"name": "Условия",
+						"count": 0,
+						"url": "/secure/admin/workflows/ViewWorkflowTransition.jspa?workflowMode=live&workflowName=ZALK+Sale+alkohol&workflowTransition=51&descriptorTab=conditions",
+						"weight": 100
+					},
+					{
+						"key": "com.atlassian.jira.plugin.system.workfloweditor.transition.tabs:validators",
+						"name": "Валидаторы",
+						"count": 0,
+						"url": "/secure/admin/workflows/ViewWorkflowTransition.jspa?workflowMode=live&workflowName=ZALK+Sale+alkohol&workflowTransition=51&descriptorTab=validators",
+						"weight": 200
+					},
+					{
+						"key": "com.atlassian.jira.plugin.system.workfloweditor.transition.tabs:postfunctions",
+						"name": "Post функции",
+						"count": 5,
+						"url": "/secure/admin/workflows/ViewWorkflowTransition.jspa?workflowMode=live&workflowName=ZALK+Sale+alkohol&workflowTransition=51&descriptorTab=postfunctions",
+						"weight": 300
+					}
+				]
+			},
+			{
+				"id": "A<81:S<8>:S<6>>",
+				"name": "Завершить покупку",
+				"sourceId": "S<8>",
+				"targetId": "S<6>",
+				"actionId": 81,
+				"initial": false,
+				"description": "",
+				"globalTransition": false,
+				"loopedTransition": false,
+				"sourceAngle": 78.11134196037203,
+				"targetAngle": -70.01689347810002,
+				"transitionOptions": [
+					{
+						"key": "properties.key",
+						"name": "Свойства",
+						"count": 0,
+						"url": "/secure/admin/workflows/ViewWorkflowTransitionMetaAttributes.jspa?workflowMode=live&workflowName=ZALK+Sale+alkohol&workflowTransition=81",
+						"weight": 10
+					},
+					{
+						"key": "com.atlassian.jira.plugin.system.workfloweditor.transition.tabs:conditions",
+						"name": "Условия",
+						"count": 0,
+						"url": "/secure/admin/workflows/ViewWorkflowTransition.jspa?workflowMode=live&workflowName=ZALK+Sale+alkohol&workflowTransition=81&descriptorTab=conditions",
+						"weight": 100
+					},
+					{
+						"key": "com.atlassian.jira.plugin.system.workfloweditor.transition.tabs:validators",
+						"name": "Валидаторы",
+						"count": 0,
+						"url": "/secure/admin/workflows/ViewWorkflowTransition.jspa?workflowMode=live&workflowName=ZALK+Sale+alkohol&workflowTransition=81&descriptorTab=validators",
+						"weight": 200
+					},
+					{
+						"key": "com.atlassian.jira.plugin.system.workfloweditor.transition.tabs:postfunctions",
+						"name": "Post функции",
+						"count": 5,
+						"url": "/secure/admin/workflows/ViewWorkflowTransition.jspa?workflowMode=live&workflowName=ZALK+Sale+alkohol&workflowTransition=81&descriptorTab=postfunctions",
+						"weight": 300
+					}
+				]
+			},
+			{
+				"id": "A<21:S<2>:S<3>>",
+				"name": "Посоветовать",
+				"sourceId": "S<2>",
+				"targetId": "S<3>",
+				"actionId": 21,
+				"initial": false,
+				"description": "",
+				"globalTransition": false,
+				"loopedTransition": false,
+				"sourceAngle": 2.4504614547228956,
+				"targetAngle": 176.8158276141545,
+				"transitionOptions": [
+					{
+						"key": "properties.key",
+						"name": "Свойства",
+						"count": 0,
+						"url": "/secure/admin/workflows/ViewWorkflowTransitionMetaAttributes.jspa?workflowMode=live&workflowName=ZALK+Sale+alkohol&workflowTransition=21",
+						"weight": 10
+					},
+					{
+						"key": "com.atlassian.jira.plugin.system.workfloweditor.transition.tabs:conditions",
+						"name": "Условия",
+						"count": 0,
+						"url": "/secure/admin/workflows/ViewWorkflowTransition.jspa?workflowMode=live&workflowName=ZALK+Sale+alkohol&workflowTransition=21&descriptorTab=conditions",
+						"weight": 100
+					},
+					{
+						"key": "com.atlassian.jira.plugin.system.workfloweditor.transition.tabs:validators",
+						"name": "Валидаторы",
+						"count": 0,
+						"url": "/secure/admin/workflows/ViewWorkflowTransition.jspa?workflowMode=live&workflowName=ZALK+Sale+alkohol&workflowTransition=21&descriptorTab=validators",
+						"weight": 200
+					},
+					{
+						"key": "com.atlassian.jira.plugin.system.workfloweditor.transition.tabs:postfunctions",
+						"name": "Post функции",
+						"count": 5,
+						"url": "/secure/admin/workflows/ViewWorkflowTransition.jspa?workflowMode=live&workflowName=ZALK+Sale+alkohol&workflowTransition=21&descriptorTab=postfunctions",
+						"weight": 300
+					}
+				]
+			},
+			{
+				"id": "A<11:S<4>:S<2>>",
+				"name": "Выбрать напиток",
+				"sourceId": "S<4>",
+				"targetId": "S<2>",
+				"actionId": 11,
+				"initial": false,
+				"description": "",
+				"globalTransition": false,
+				"loopedTransition": false,
+				"sourceAngle": 78.11134196037203,
+				"targetAngle": -70.01689347810002,
+				"transitionOptions": [
+					{
+						"key": "properties.key",
+						"name": "Свойства",
+						"count": 0,
+						"url": "/secure/admin/workflows/ViewWorkflowTransitionMetaAttributes.jspa?workflowMode=live&workflowName=ZALK+Sale+alkohol&workflowTransition=11",
+						"weight": 10
+					},
+					{
+						"key": "com.atlassian.jira.plugin.system.workfloweditor.transition.tabs:conditions",
+						"name": "Условия",
+						"count": 0,
+						"url": "/secure/admin/workflows/ViewWorkflowTransition.jspa?workflowMode=live&workflowName=ZALK+Sale+alkohol&workflowTransition=11&descriptorTab=conditions",
+						"weight": 100
+					},
+					{
+						"key": "com.atlassian.jira.plugin.system.workfloweditor.transition.tabs:validators",
+						"name": "Валидаторы",
+						"count": 0,
+						"url": "/secure/admin/workflows/ViewWorkflowTransition.jspa?workflowMode=live&workflowName=ZALK+Sale+alkohol&workflowTransition=11&descriptorTab=validators",
+						"weight": 200
+					},
+					{
+						"key": "com.atlassian.jira.plugin.system.workfloweditor.transition.tabs:postfunctions",
+						"name": "Post функции",
+						"count": 5,
+						"url": "/secure/admin/workflows/ViewWorkflowTransition.jspa?workflowMode=live&workflowName=ZALK+Sale+alkohol&workflowTransition=11&descriptorTab=postfunctions",
+						"weight": 300
+					}
+				]
+			},
+			{
+				"id": "A<71:S<7>:S<8>>",
+				"name": "Принять оплату",
+				"sourceId": "S<7>",
+				"targetId": "S<8>",
+				"actionId": 71,
+				"initial": false,
+				"description": "",
+				"globalTransition": false,
+				"loopedTransition": false,
+				"sourceAngle": 78.11134196037203,
+				"targetAngle": -70.01689347810002,
+				"transitionOptions": [
+					{
+						"key": "properties.key",
+						"name": "Свойства",
+						"count": 0,
+						"url": "/secure/admin/workflows/ViewWorkflowTransitionMetaAttributes.jspa?workflowMode=live&workflowName=ZALK+Sale+alkohol&workflowTransition=71",
+						"weight": 10
+					},
+					{
+						"key": "com.atlassian.jira.plugin.system.workfloweditor.transition.tabs:conditions",
+						"name": "Условия",
+						"count": 0,
+						"url": "/secure/admin/workflows/ViewWorkflowTransition.jspa?workflowMode=live&workflowName=ZALK+Sale+alkohol&workflowTransition=71&descriptorTab=conditions",
+						"weight": 100
+					},
+					{
+						"key": "com.atlassian.jira.plugin.system.workfloweditor.transition.tabs:validators",
+						"name": "Валидаторы",
+						"count": 0,
+						"url": "/secure/admin/workflows/ViewWorkflowTransition.jspa?workflowMode=live&workflowName=ZALK+Sale+alkohol&workflowTransition=71&descriptorTab=validators",
+						"weight": 200
+					},
+					{
+						"key": "com.atlassian.jira.plugin.system.workfloweditor.transition.tabs:postfunctions",
+						"name": "Post функции",
+						"count": 5,
+						"url": "/secure/admin/workflows/ViewWorkflowTransition.jspa?workflowMode=live&workflowName=ZALK+Sale+alkohol&workflowTransition=71&descriptorTab=postfunctions",
+						"weight": 300
+					}
+				]
+			},
+			{
+				"id": "A<61:S<9>:S<7>>",
+				"name": "Ждать оплату",
+				"sourceId": "S<9>",
+				"targetId": "S<7>",
+				"actionId": 61,
+				"initial": false,
+				"description": "",
+				"globalTransition": false,
+				"loopedTransition": false,
+				"sourceAngle": 78.11134196037203,
+				"targetAngle": -70.01689347810002,
+				"transitionOptions": [
+					{
+						"key": "properties.key",
+						"name": "Свойства",
+						"count": 0,
+						"url": "/secure/admin/workflows/ViewWorkflowTransitionMetaAttributes.jspa?workflowMode=live&workflowName=ZALK+Sale+alkohol&workflowTransition=61",
+						"weight": 10
+					},
+					{
+						"key": "com.atlassian.jira.plugin.system.workfloweditor.transition.tabs:conditions",
+						"name": "Условия",
+						"count": 0,
+						"url": "/secure/admin/workflows/ViewWorkflowTransition.jspa?workflowMode=live&workflowName=ZALK+Sale+alkohol&workflowTransition=61&descriptorTab=conditions",
+						"weight": 100
+					},
+					{
+						"key": "com.atlassian.jira.plugin.system.workfloweditor.transition.tabs:validators",
+						"name": "Валидаторы",
+						"count": 0,
+						"url": "/secure/admin/workflows/ViewWorkflowTransition.jspa?workflowMode=live&workflowName=ZALK+Sale+alkohol&workflowTransition=61&descriptorTab=validators",
+						"weight": 200
+					},
+					{
+						"key": "com.atlassian.jira.plugin.system.workfloweditor.transition.tabs:postfunctions",
+						"name": "Post функции",
+						"count": 5,
+						"url": "/secure/admin/workflows/ViewWorkflowTransition.jspa?workflowMode=live&workflowName=ZALK+Sale+alkohol&workflowTransition=61&descriptorTab=postfunctions",
+						"weight": 300
+					}
+				]
+			}
+		],
+		"updatedDate": 1693902038358,
+		"updateAuthor": {
+			"userName": "admin",
+			"displayName": "General Admin"
+		}
+	},
+	"workflowPermissions": {
+		"administrator": true,
+		"editPropertyOptions": true,
+		"selectScreenOnTransition": true,
+		"createStatus": true,
+		"editStatus": true,
+		"editWorkflow": true,
+		"deleteStatus": true
+	}
+};

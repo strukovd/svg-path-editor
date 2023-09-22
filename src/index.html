@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<script src="../storage/data/data.js"></script>
+	<script src="./Canvas.js"></script>
+	<script src="./Manager.js"></script>
+	<script src="./Workspace.js"></script>
+	<script src="./components/Block.js"></script>
+	<script src="./utils/MapScroller.js"></script>
+	<script src="./utils/Mover.js"></script>
+	<title>SVG PATH EDITOR</title>
+	<style>
+		body {
+			margin: 0;
+			font-size: 16px;
+			color: whitesmoke;
+			font-family: Arial, Helvetica, sans-serif;
+			background-color:#1f1f1f;
+		}
+
+		#top-panel {
+			padding:.5em 0;
+			border-bottom:1px solid #303030;
+		}
+		#top-panel>#logo {
+			padding:0 .9em;
+		}
+
+		#menu {
+			
+		}
+		#menu>ul {
+			list-style: none;
+			padding: 0;
+			margin: 0;
+			display: flex;
+			font-size: .8em;
+		}
+		#menu>ul>li {
+			padding:.3em 1em;
+		}
+		#menu>ul>li:hover {
+			cursor: pointer;
+			background-color:#303030;
+		}
+
+
+		main {
+
+		}
+
+		#tab-panel {
+			
+		}
+	</style>
+</head>
+<body>
+	<header id="header">
+		<div id="top-panel">
+			<div id="logo">SVG PATH EDITOR</div>
+		</div>
+		<div id="menu">
+			<ul>
+				<li>Окно</li>
+				<li>Вид</li>
+				<li>О программе</li>
+			</ul>
+		</div>
+	</header>
+	<main>
+		<section id="tab-panel">
+			<div class=""></div>
+		</section>
+		<section class="editor">
+			<style>
+				.ellipse {
+					stroke: #dbdbdb;
+					stroke-width: 0.4px;
+					fill: #f9f9f9;
+				}
+	
+				.status {
+					font-size: 10px;
+					font-weight: 600;
+					font-family: Arial, Helvetica, sans-serif;
+					text-anchor: start;
+					cursor: move;
+					user-select: none;
+				}
+				.status .rect {
+					stroke-width: 0.5px;
+				}
+	
+	
+				.status-yellow {
+	
+				}
+				.status-yellow .rect {
+					fill: #dfe2e7;
+					stroke: #c4c7cf;
+					fill: #f9f9f9;
+					stroke: #dbdbdb;
+				}
+				.status-yellow .label {
+					fill: #445064E0;
+					fill: #646464;
+				}
+	
+				.status-blue {
+	
+				}
+				.status-blue .rect {
+					fill: #dbecfe;
+					stroke: #b7d2ee;
+					stroke: #6c9dd1;
+				}
+				.status-blue .label {
+					fill: #164085E0;
+				}
+	
+				.status-green {
+	
+				}
+				.status-green .rect {
+					fill: #ddfdee;
+					stroke: #afecd2;
+					stroke: #22bb7aa8;
+				}
+				.status-green .label {
+					fill: #17573dE0;
+				}
+	
+				.status-violet {
+	
+				}
+				.status-violet .rect {
+					fill: #6615db4a;
+					stroke: #b31212;
+					stroke-width: 3;
+				}
+				.status-violet .label {
+					fill: #682bbf;
+				}
+			</style>
+			<svg style="background-color:#181818;" id="canvas" width="100%" height="100vh" viewBox="0 0 500 500">
+				<!-- <g id="myGroup" transform="translate(200, 30)">
+					<rect x="0" y="0" width="80" height="40" fill="blue" />
+					<text x="10" y="20" fill="white">Прямоугольник</text>
+				  </g> -->
+			</svg>
+		</section>
+	</main>
+	<footer>
+		Показывать:
+		Сколько элементов выделено
+		..
+		И прочие мета-данные
+	</footer>
+</body>
+</html>
