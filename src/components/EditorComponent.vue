@@ -49,6 +49,11 @@ export default defineComponent({
 	methods: {
 		m() {
 			this.strokeWidth.toFixed();
+		},
+
+		getVisiblePoints() {
+			// Т.к. планируется некая структура данных (kd-tree или quad-tree) для хранения точек
+			// то видимые точки получать этим методом
 		}
 	}
 });
@@ -57,5 +62,7 @@ export default defineComponent({
 <style scoped lang="scss">
 #editor {
 	width:100%;
+	background-color: #333;
+	height:100vh;
 }
 </style>
