@@ -6,11 +6,9 @@
 				x2="86.5915" y2="0"
 				strokeWidth="strokeWidth"></line>
 		</g>
-		<g class="fill-path">
-
-		</g>
+		<g class="fill-path"></g>
 		<g class="control-points">
-
+			<!-- Дополнительные магнитные точки -->
 		</g>
 		<g class="points">
 
@@ -44,16 +42,21 @@ export default defineComponent({
 		strokeWidth() {
 			// return this.cfg.viewPortWidth / this.canvasWidth
 			return 1;
+		},
+		visiblePoints() {
+			/*
+			Т.к. планируется некая структура данных (kd-tree или quad-tree)
+			для хранения точек, то видимые точки получать этим computed свойством.
+			Значение должно зависеть от видимой обласи
+			Если видимая область меняется, то и массив видимых
+			точек должен пересчитыватся
+			*/
+			return [];
 		}
 	},
 	methods: {
 		m() {
 			this.strokeWidth.toFixed();
-		},
-
-		getVisiblePoints() {
-			// Т.к. планируется некая структура данных (kd-tree или quad-tree) для хранения точек
-			// то видимые точки получать этим методом
 		}
 	}
 });

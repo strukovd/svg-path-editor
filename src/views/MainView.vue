@@ -1,19 +1,13 @@
 <template>
-	<component :is="layout"></component>
+	<div></div>
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import MainLayout from '@/components/layouts/MainLayout.vue';
 
 export default defineComponent({
 	components: {
-		MainLayout
-	},
-	computed: {
-		layout() {
-			return "MainLayout";
-		}
+
 	}
 });
 </script>
