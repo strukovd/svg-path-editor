@@ -1,3 +1,50 @@
+# Изучение исходного кода
+
+## Точки
+### Основные точки
+
+1. Найти парсер path точек
+	[Текст ссылки](vscode://~/repository/open-source/svg-path-editor/src/app/app.component.ts:238)
+	В конструкторе класса Svg svg.ts:510 вызывается метод 
+
+2. Понять где хранятся список спаршеных точек (модель данных) 
+3. Понять как добавляются точки
+4. Понять как отрисовываются точки
+
+
+# Разбирал исходник, искать реализацию моментов по хештегам
+
+# Zoom (#zoom)
+# Рисование сетки (#grid)
+# Выравниание по сетке (#??)
+# Импортируемая картинка (#image)
+# Контур рисунка (#path)
+# Контрольные (второстипенные) точки (направляющие, магнитные) (#controlPoints)
+# Undo \ redo (#undo)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # SvgPathEditor
 Edit or create SVG paths in browser: https://yqnn.github.io/svg-path-editor/
 [![Image of Yaktocat](./doc/screenshot.png)](https://yqnn.github.io/svg-path-editor/)

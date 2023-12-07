@@ -11,7 +11,7 @@ export class PathPreviewComponent implements OnInit {
   @Input() width?: number;
   @Input() height?: number;
 
-  @Input() fillColor?: string = '#000000';
+  @Input() fillColor?: string = '#ffff00';
   @Input() strokeColor?: string;
   @Input() strokeWidth?: number;
   @Input() path = '';

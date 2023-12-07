@@ -1,15 +1,47 @@
 import { SvgParser } from './svg-parser';
 
 export function formatNumber(v: number, d: number, minify = false): string {
+  /*
+    предназначен для форматирования числа типа number в строку с определенным числом десятичных знаков
+    и опциональной минимизацией нулей
+    Основное различие между методом toFixed и представленной функцией formatNumber заключается в том,
+    что toFixed не выполняет удаление лишних нулей после десятичной точки или десятичной точки,
+    если она находится в конце числа
+    12.0003400.toFixed(2) вернет "12.00
+    formatNumber(12.0003400, 2, true) вернет "12", убрав лишние нули и точку.
+
+    ///Первая часть replace
+    console.log( `-12.001200`.replace(/^(-?[0-9]*\.([0-9]*[1-9])?)0*$/, '$1') );
+    -12.0012
+    console.log( `-12.1200`.replace(/^(-?[0-9]*\.([0-9]*[1-9])?)0*$/, '$1') );
+    -12.12
+    console.log( `-12.0012`.replace(/^(-?[0-9]*\.([0-9]*[1-9])?)0*$/, '$1') );
+    -12.0012
+    console.log( `-12.12`.replace(/^(-?[0-9]*\.([0-9]*[1-9])?)0*$/, '$1') );
+    -12.12
+    console.log( `12.001200`.replace(/^(-?[0-9]*\.([0-9]*[1-9])?)0*$/, '$1') );
+    12.0012
+    console.log( `12.0000`.replace(/^(-?[0-9]*\.([0-9]*[1-9])?)0*$/, '$1') );
+    12.
+  */
+    // console.log( `-12.0012`.replace(/^(-?)0\./, '$1.')     );
+    // console.log( `-12.12`.replace(/^(-?)0\./, '$1.')     );
+    // console.log( `-12.0012`.replace(/^(-?)0\./, '$1.')     );
+    // console.log( `-12.12`.replace(/^(-?)0\./, '$1.')     );
+    // console.log( `12.0012`.replace(/^(-?)0\./, '$1.')      );
+    // console.log( `12`.replace(/^(-?)0\./, '$1.')     );
+
     let result = v.toFixed(d)
-        .replace(/^(-?[0-9]*\.([0-9]*[1-9])?)0*$/, '$1')
-        .replace(/\.$/, '');
+        // .replace(/^(-?[0-9]*\.([0-9]*[1-9])?)0*$/, '$1') // Удаляет в конце нули
+        // .replace(/\.$/, ''); // Удаляет точку, если она осталась
+        .replace(/\.?0*$/, '');
     if (minify) {
-        result = result.replace(/^(-?)0\./, '$1.');
+        result = result.replace(/^(-?)0\./, '$1.'); // Если значение с нулевым целым числом, удаляет его (т.к. для CSS оно лишнее) 0.21 => .21
     }
     return result;
 }
 
+/** Простейщий класс имещий 2 поля (координаты X и Y) */
 export class Point {
     constructor(
         public x: number,
@@ -18,6 +50,8 @@ export class Point {
  }
 
 export class SvgPoint extends Point {
+  // Зачем нужен SvgPoint если есть SvgItem??
+  // Это объект точка (и для линий и для вторичных линий безьё)
     itemReference: SvgItem = new DummySvgItem();
     movable = true;
     constructor(
@@ -40,6 +74,10 @@ export class SvgControlPoint extends SvgPoint {
     }
  }
 
+/**
+  Экземпляры SvgItem представляют из себя точки внутри Svg редактора,
+  Это базовый класс, у него есть классы (его наследователи) которые имеют дополнительно характерные для типа точки методы
+*/
 export abstract class SvgItem {
 
     constructor(values: number[], relative: boolean) {
@@ -506,12 +544,31 @@ class EllipticalArcTo extends SvgItem {
 }
 
 
+/**
+  Этот класс представляет сам <svg> редактор
+  (создется (инстанцируется) в файле .. на строке ..),
+  имеет методы преобразования (и чего-то еще..),
+  он хранит в себе массив path, элементы которого представляют из себя инстансы SvgItem (и его наследователи),
+  которые представляют точку внутри Svg редактора (то есть саму объектную модель)
+*/
 export class Svg {
     path: SvgItem[];
 
     constructor(path: string) {
+        console.log(`Вызван constructor Svg`);
+        console.log(`Сырой path: ${path}`);
+
+        // Метод SvgParser.parse делит строку path, на массив, в котором каждый итем содержит отдельную команду (M,L,C,Q,T,..)
         const rawPath = SvgParser.parse(path);
+        console.log(`После парсинга rawPath: ${JSON.stringify(rawPath)}`);
+
+        /* По букве [M (MoveTo), L (LineTo), H (HorizontalLineTo), V (VerticalLineTo), Z (ClosePath), C(), S, Q, T, A ]
+        определяет класс, по которому будет содан (Make) инстанс конкретного типа
+        То есть получаем массив инстансов конкретных классов (которые все наследуются от общего интерфейса SvgItem, который реализует ..) и получается конечная объектная модель
+        */
         this.path = rawPath.map( it => SvgItem.Make(it) );
+        console.log(`После применения SvgItem.Make к каждому итему, this.path: ${JSON.stringify(this.path)}`);
+
         this.refreshAbsolutePositions();
     }
 

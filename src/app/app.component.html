@@ -1,14 +1,20 @@
 <div style="display:flex;flex-direction:row;height: 100%;" @leftColumnParent>
+
     <div *ngIf="isLeftPanelOpened" @leftColumn (@leftColumn.done)="canvas?.refreshCanvasSize()" class="left-column-wrapper">
+        <!-- Кнопка скрывающая левую панель -->
         <button mat-raised-button class="left-column-close"
             (click)="toggleLeftPanel()"
         >
             <mat-icon>arrow_left</mat-icon>
         </button>
+
+        <!-- Левая панель -->
         <div class="left-column" cdk-scrollable>
+
+            <!-- Схлопывающийся компонент на левой панели, включащий в себя текстовое поле PATH и сопутствующие кнопки -->
             <app-expandable panelTitle="Path" [panelInfo]="rawPath.length.toString()" [opened]="true">
                 <div class="row">
-                    <div class="input-block" style="flex-grow:1"> 
+                    <div class="input-block" style="flex-grow:1">
                         <label class="opaque">Path</label>
                         <textarea
                             [ngModel]="rawPath"
@@ -22,7 +28,7 @@
                     </div>
                 </div>
                 <div class="path-buttons">
-                    
+
                     <app-open (openPath)="openPath($event.path, $event.name)" style="margin-left: 6px;"></app-open>
                     <app-save [path]="rawPath" [(name)]="pathName"></app-save>
 
@@ -48,9 +54,10 @@
                     >
                         <mat-icon>add</mat-icon>
                     </button>
-                </div>            
+                </div>
             </app-expandable>
 
+            <!-- Схлопывающийся компонент на левой панели, содержащий вкладку конфигурации -->
             <app-expandable panelTitle="Configuration" [opened]="true">
                 <div class="row">
                     <div class="input-block" [ngClass]="{'disabled': cfg.viewPortLocked }">
@@ -60,7 +67,7 @@
                             appFormatter
                             [numberValue]="cfg.viewPortX"
                             (numberValueChange)="updateViewPort($event, cfg.viewPortY, cfg.viewPortWidth, cfg.viewPortHeight)"
-                            [disabled]="cfg.viewPortLocked" 
+                            [disabled]="cfg.viewPortLocked"
                         >
                     </div>
                     <div class="input-block" [ngClass]="{'disabled': cfg.viewPortLocked }">
@@ -70,7 +77,7 @@
                             appFormatter
                             [numberValue]="cfg.viewPortY"
                             (numberValueChange)="updateViewPort(cfg.viewPortX, $event, cfg.viewPortWidth, cfg.viewPortHeight)"
-                            [disabled]="cfg.viewPortLocked" 
+                            [disabled]="cfg.viewPortLocked"
                         >
                     </div>
                     <div class="input-block" [ngClass]="{'disabled': cfg.viewPortLocked }">
@@ -81,7 +88,7 @@
                             formatterType="positive-float"
                             [numberValue]="cfg.viewPortWidth"
                             (numberValueChange)="updateViewPort(cfg.viewPortX, cfg.viewPortY, $event, null)"
-                            [disabled]="cfg.viewPortLocked" 
+                            [disabled]="cfg.viewPortLocked"
                         >
                     </div>
                     <div class="input-block" [ngClass]="{'disabled': cfg.viewPortLocked }">
@@ -92,7 +99,7 @@
                             formatterType="positive-float"
                             [numberValue]="cfg.viewPortHeight"
                             (numberValueChange)="updateViewPort(cfg.viewPortX, cfg.viewPortY, null, $event)"
-                            [disabled]="cfg.viewPortLocked" 
+                            [disabled]="cfg.viewPortLocked"
                         >
                     </div>
 
@@ -134,7 +141,7 @@
                             class="app-input"
                             appFormatter
                             formatterType="positive-integer"
-                            [(numberValue)]="cfg.tickInterval" 
+                            [(numberValue)]="cfg.tickInterval"
                             [disabled]="!cfg.showTicks">
                     </div>
                 </div>
@@ -146,6 +153,7 @@
 
             </app-expandable>
 
+            <!-- Схлопывающийся компонент на левой панели, содержащий вкладку операций преобразований -->
             <app-expandable panelTitle="Path Operations" [opened]="true">
                 <div class="row path-operations-grid">
                     <div class="input-block" style="flex:1">
@@ -199,7 +207,7 @@
                         <input appFormatter suffix="°" [(numberValue)]="rotateAngle" class="app-input">
                     </div>
                     <button
-                        mat-flat-button 
+                        mat-flat-button
                         (click)="rotate(rotateX, rotateY, rotateAngle)"
                         style="flex:1"
                         matTooltip="Rotate the full path by the given angle in degrees about the given point"
@@ -214,7 +222,7 @@
                         <input appFormatter formatterType="positive-integer" [(numberValue)]="roundValuesDecimals" class="app-input">
                     </div>
                     <button
-                        mat-flat-button 
+                        mat-flat-button
                         (click)="roundValues(roundValuesDecimals)"
                         style="flex:1"
                         matTooltip="Round all values, input the number of decimals to keep"
@@ -224,13 +232,13 @@
                 </div>
 
                 <div class="row">
-                    <button mat-flat-button 
+                    <button mat-flat-button
                         (click)="setRelative(true)"
                         matTooltip="Convert all commands to relative"
                         style="flex:1"
                         class="mat-flat-button"
                     >Convert to relative</button>
-                    <button mat-flat-button 
+                    <button mat-flat-button
                         (click)="setRelative(false)"
                         matTooltip="Convert all commands to absolute"
                         style="flex:1"
@@ -240,8 +248,9 @@
             </app-expandable>
 
 
+            <!-- Схлопывающийся компонент на левой панели, содержащий вкладку с PATH ячейками команд -->
             <app-expandable panelTitle="Commands" [opened]="true">
-                <div *ngFor="let item of parsedPath.path; let j=index" 
+                <div *ngFor="let item of parsedPath.path; let j=index"
                     (mouseenter)="hoveredItem=item"
                     (mouseleave)="hoveredItem=null"
                     [ngClass]="{
@@ -273,7 +282,7 @@
                             appKeyboardNavigable
                             keyboardNavigableIdPrefix="svg_command"
                             appFormatter
-                            [numberValue]="value" 
+                            [numberValue]="value"
                             (numberValueChange)="setValue(item,i,$event);"
                             class="svg-value app-input"
                             id="svg_command_{{j}}_{{item.getType().toLowerCase()==='a' && i>4 ? i-1 : i}}"
@@ -294,11 +303,15 @@
     </div>
 
     <div class="drawings">
+
+        <!-- Кнопка разворачивания левой панели, если она скрыта -->
         <button mat-raised-button class="left-column-open" *ngIf="!isLeftPanelOpened"
         (click)="toggleLeftPanel()"
         >
             <mat-icon>arrow_right</mat-icon>
         </button>
+
+        <!-- Кнопка добавления первой точки (когда path пуст) -->
         <button mat-mini-fab *ngIf="((!draggedPoint && focusedItem) || parsedPath.path.length===0) && !(cfg.preview || isEditingImages)"
             color="accent"
             class="add-button"
@@ -316,11 +329,14 @@
             <mat-icon *ngIf="!focusedItem">add</mat-icon>
         </button>
 
+        <!-- Координаты точки, появляются при перетаскивании точек -->
         <label class="cursor-position" *ngIf="cursorPosition" >
             {{cursorPosition.x.toFixed(cursorPosition.decimals)}},
             {{cursorPosition.y.toFixed(cursorPosition.decimals)}}
         </label>
 
+        <!-- #image
+        Кнопка которая появляется при выборе (фокус) картинки, для открытия меню прозрачности и прочее -->
         <button mat-mini-fab *ngIf="(focusedImage && !cfg.preview && !dragging)"
             color="accent"
             class="add-button"
@@ -337,6 +353,7 @@
             <mat-icon svgIcon="more"></mat-icon>
         </button>
 
+        <!-- Круглые кнопки сверху справа (.., download, save, share) -->
         <div class="scene-top-actions">
             <button mat-mini-fab
                 color="primary"
@@ -378,6 +395,8 @@
             <app-export [path]="rawPath" [name]="pathName || '' " style="margin-right: 8px"></app-export>
             <app-share [path]="rawPath"></app-share>
         </div>
+
+        <!-- Круглые кнопки справа снизу (grid, zoom, unzoom) -->
         <div class="scene-bottom-actions">
             <button
                 mat-mini-fab
@@ -386,7 +405,7 @@
                 matTooltip="Snap to Grid"
                 matTooltipPosition="left"
             >
-                <mat-icon> {{ cfg.snapToGrid ? 'grid_on' : 'grid_off' }}</mat-icon> 
+                <mat-icon> {{ cfg.snapToGrid ? 'grid_on' : 'grid_off' }}</mat-icon>
             </button>
             <button
                 mat-mini-fab
@@ -396,7 +415,7 @@
                 matTooltipPosition="left"
                 style="margin-top: 24px"
             >
-                <mat-icon svgIcon="zoom_in"></mat-icon> 
+                <mat-icon svgIcon="zoom_in"></mat-icon>
             </button>
             <button
                 mat-mini-fab
@@ -405,7 +424,7 @@
                 matTooltip="Zoom to Fit"
                 matTooltipPosition="left"
             >
-                <mat-icon svgIcon="zoom_fit"></mat-icon> 
+                <mat-icon svgIcon="zoom_fit"></mat-icon>
             </button>
             <button
                 mat-mini-fab
@@ -414,17 +433,18 @@
                 matTooltip="Zoom Out"
                 matTooltipPosition="left"
             >
-                <mat-icon svgIcon="zoom_out"></mat-icon> 
+                <mat-icon svgIcon="zoom_out"></mat-icon>
             </button>
         </div>
 
+        <!-- Сам редактор canvas (Editor) -->
         <svg
-            xmlns="http://www.w3.org/2000/svg" 
+            xmlns="http://www.w3.org/2000/svg"
             xmlns:xlink="http://www.w3.org/1999/xlink"
-            app-canvas 
+            app-canvas
             [attr.viewBox]="cfg.viewPortX+' '+cfg.viewPortY+' '+cfg.viewPortWidth+' '+cfg.viewPortHeight"
             [ngClass]="{preview:cfg.preview}"
-        
+
             [parsedPath]="parsedPath"
             [targetPoints]="targetPoints"
             [controlPoints]="controlPoints"
@@ -459,6 +479,7 @@
 </div>
 
 
+<!-- Кнопки гитхаб и спонисирования -->
 <div *ngIf="isLeftPanelOpened"  class="footer">
     <a href="https://github.com/Yqnn/svg-path-editor" target="_blank">
         <mat-icon svgIcon="github"></mat-icon> GitHub
@@ -470,6 +491,7 @@
 
 <app-import (importPath)="openPath($event, '')"></app-import>
 
+<!-- Далее видимо блоки контекстных (ПКМ) меню -->
 <mat-menu #appMenu="matMenu"  xPosition="before">
     <ng-template matMenuContent let-item="item"  let-idx="idx">
         <button mat-menu-item [matMenuTriggerFor]="appCreate" [matMenuTriggerData]="{item:item, idx:idx}">

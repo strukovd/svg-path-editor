@@ -90,6 +90,8 @@ export class CanvasComponent implements OnInit, OnChanges, AfterViewInit {
   trackByIndex = (idx: number, _: unknown) => idx;
 
   ngOnChanges(changes: SimpleChanges): void {
+    console.log(`Вызван метод ${this.constructor.name}::ngOnChanges`); // #zoom [5]
+
     if (changes['viewPortX'] || changes['viewPortY'] || changes['viewPortWidth'] || changes['viewPortHeight']) {
       this.refreshGrid();
     }
@@ -99,10 +101,12 @@ export class CanvasComponent implements OnInit, OnChanges, AfterViewInit {
   }
 
   ngAfterViewInit() {
+    console.log(`Вызван метод ${this.constructor.name}::ngAfterViewInit`);
+
     setTimeout(() => {
       this.refreshCanvasSize(true);
     });
-    window.addEventListener('resize', () => {
+    window.addEventListener('resize', () => { // После изменения размеров окна, вызывается метод refreshCanvasSize
       this.refreshCanvasSize(true);
     });
 
@@ -111,6 +115,8 @@ export class CanvasComponent implements OnInit, OnChanges, AfterViewInit {
   }
 
   ngOnInit(): void {
+    console.log(`Вызван метод ${this.constructor.name}::ngOnInit`);
+
     const cap = (val:number, max:number) => val > max ? max : val < -max ? -max : val;
     const throttler = throttleTime(20, undefined, {leading: false, trailing: true});
     this.wheel$
@@ -123,42 +129,68 @@ export class CanvasComponent implements OnInit, OnChanges, AfterViewInit {
   }
 
   @HostListener('mousedown', ['$event']) onMouseDown($event: MouseEvent) {
+    console.log(`Вызван метод ${this.constructor.name}::onMouseDown`);
+
     this.startDragCanvas($event);
     $event.stopPropagation();
   }
   @HostListener('mousemove', ['$event']) onMouseMove($event: MouseEvent) {
+    // console.log(`Вызван метод ${this.constructor.name}::onMouseMove`);
+
     this.drag($event);
   }
   @HostListener('mouseup', ['$event'])  onMouseUp($event: MouseEvent) {
+    console.log(`Вызван метод ${this.constructor.name}::onMouseUp`);
+
     this.stopDrag();
   }
   @HostListener('touchstart', ['$event']) onTouchStart($event: TouchEvent) {
+    console.log(`Вызван метод ${this.constructor.name}::onTouchStart`);
+
     this.startDragCanvas($event);
     $event.preventDefault();
     $event.stopPropagation();
   }
   @HostListener('touchmove', ['$event']) onTouchMove($event: TouchEvent) {
+    console.log(`Вызван метод ${this.constructor.name}::onTouchMove`);
+
     this.drag($event);
   }
   @HostListener('touchend', ['$event']) onTouchEnd($event: TouchEvent) {
+    console.log(`Вызван метод ${this.constructor.name}::onTouchEnd`);
+
     this.stopDrag();
   }
   @HostListener('wheel', ['$event']) onWheel($event: WheelEvent) {
+    console.log(`Вызван метод ${this.constructor.name}::onWheel`); // #zoom [1]
+
     this.wheel$.next($event);
   }
   @HostListener('click', ['$event']) onClick($event: MouseEvent) {
+    console.log(`Вызван метод ${this.constructor.name}::onClick`);
+
     this.hoveredItem = null;
   }
 
 
+  /**
+   * window.onResize
+   * Метод вызывается после инициализации окна (хук Angular'а - ngAfterViewInit),
+   * и //! на событие window.resize (изменение окна)
+   * @param emitEmptyCanvas
+   */
   refreshCanvasSize(emitEmptyCanvas = false) {
+    console.log(`Вызван метод ${this.constructor.name}::refreshCanvasSize`);
+
     const rect = this.canvas.nativeElement.parentNode.getBoundingClientRect();
-    if (rect.width === 0 && emitEmptyCanvas) {
+    if (rect.width === 0 && emitEmptyCanvas) { // Если окно сжато так, что ширина canvas == 0
       this.emptyCanvas.emit();
     }
+    // Записываем новые размеры canvas
     this.canvasWidth = rect.width;
     this.canvasHeight = rect.height;
 
+    // Оповещаем другие компоненты событием viewPort
     this.viewPort.emit({
       x: this.viewPortX,
       y: this.viewPortY,
@@ -168,10 +200,28 @@ export class CanvasComponent implements OnInit, OnChanges, AfterViewInit {
     });
   }
 
+  /**
+   * Отрисовка сетки
+   */
   refreshGrid() {
+    console.log(`Вызван метод ${this.constructor.name}::refreshGrid`); // #zoom [6]
+    console.log(`this.viewPortWidth ${this.viewPortWidth}, this.canvasWidth ${this.canvasWidth}`);
+    console.log(`5 * this.viewPortWidth ${5 * this.viewPortWidth}`);
+
+
+    // Если (пять видимых областей) ширина видимой области svg холста (viewPort) меньше экрана
+    // Вернее, если экран больше чем 5 видимых областей
+    // Вернее, если экран больше более чем 5 видимых областей
+    // Вернее, если экран 5 видимых областей и более
+    // Вернее, если видимая область холста (viewPort) по ширине ...
+    // Вернее, пока видимая область (viewPort) по ширине в пять раз меньше экрана, то сетка рисуется
     if (5 * this.viewPortWidth <= this.canvasWidth) {
-      this.xGrid = Array(Math.ceil(this.viewPortWidth) + 1).fill(null).map((_, i) => Math.floor(this.viewPortX) + i);
-      this.yGrid = Array(Math.ceil(this.viewPortHeight) + 1).fill(null).map((_, i) => Math.floor(this.viewPortY) + i);
+      this.xGrid = Array(Math.ceil(this.viewPortWidth) + 1)
+        .fill(null)
+        .map((_, i) => Math.floor(this.viewPortX) + i);
+      this.yGrid = Array(Math.ceil(this.viewPortHeight) + 1)
+        .fill(null)
+        .map((_, i) => Math.floor(this.viewPortY) + i);
     } else {
       this.xGrid = [];
       this.yGrid = [];
@@ -179,6 +229,9 @@ export class CanvasComponent implements OnInit, OnChanges, AfterViewInit {
   }
 
   eventToLocation(event: MouseEvent | TouchEvent, idx = 0): {x: number, y: number} {
+    // Тут вычисляется координата левого верхнего угла, при (#zoom) относительно положения курсора
+    console.log(`Вызван метод ${this.constructor.name}::eventToLocation`); // #zoom [3]
+
     const rect = this.canvas.nativeElement.getBoundingClientRect();
     const touch = event instanceof MouseEvent ? event : event.touches[idx];
     const x = this.viewPortX + (touch.clientX - rect.left) * this.strokeWidth;
@@ -187,6 +240,8 @@ export class CanvasComponent implements OnInit, OnChanges, AfterViewInit {
   }
 
   pinchToZoom(previousEvent: MouseEvent | TouchEvent, event: MouseEvent | TouchEvent) {
+    console.log(`Вызван метод ${this.constructor.name}::pinchToZoom`);
+
     if ( window.TouchEvent
       && previousEvent instanceof TouchEvent
       && event instanceof TouchEvent
@@ -209,6 +264,8 @@ export class CanvasComponent implements OnInit, OnChanges, AfterViewInit {
   }
 
   mousewheel(event: {event: WheelEvent, deltaY: number}) {
+    console.log(`Вызван метод ${this.constructor.name}::mousewheel`); // #zoom [2]
+
     const scale = Math.pow(1.005, event.deltaY);
     const pt = this.eventToLocation(event.event);
 
@@ -216,6 +273,8 @@ export class CanvasComponent implements OnInit, OnChanges, AfterViewInit {
   }
 
   zoomViewPort(scale: number,  pt?: {x: number, y: number}) {
+    console.log(`Вызван метод ${this.constructor.name}::zoomViewPort`); // #zoom [4]
+
     if (!pt) {
       pt = {x: this.viewPortX + 0.5 * this.viewPortWidth, y: this.viewPortY + 0.5 * this.viewPortHeight};
     }
@@ -224,10 +283,13 @@ export class CanvasComponent implements OnInit, OnChanges, AfterViewInit {
     const x = this.viewPortX + ((pt.x - this.viewPortX) - scale * (pt.x - this.viewPortX));
     const y = this.viewPortY + ((pt.y - this.viewPortY) - scale * (pt.y - this.viewPortY));
 
+    // Эмитим событие viewPort, которое задает новое значение viewPort для svg
     this.viewPort.emit({x, y, w, h});
   }
 
   startDrag(item: SvgPoint) {
+    console.log(`Вызван метод ${this.constructor.name}::startDrag`);
+
     if (item !== this.draggedPoint) {
       this.dragWithoutClick = false;
     }
@@ -241,12 +303,16 @@ export class CanvasComponent implements OnInit, OnChanges, AfterViewInit {
   }
 
   startDragCanvas(event: MouseEvent | TouchEvent) {
+    console.log(`Вызван метод ${this.constructor.name}::startDragCanvas`);
+
     this.draggedEvt = event;
     this.wasCanvasDragged = false;
     this.dragWithoutClick = false;
   }
 
   startDragImage(event: MouseEvent | TouchEvent, im: Image, type: number): void {
+    console.log(`Вызван метод ${this.constructor.name}::startDragImage`);
+
     this.dragging.emit(true);
     this.draggedEvt = event;
     this.draggedImage = im;
@@ -255,6 +321,8 @@ export class CanvasComponent implements OnInit, OnChanges, AfterViewInit {
   }
 
   stopDrag() {
+    console.log(`Вызван метод ${this.constructor.name}::stopDrag`);
+
     if (this.draggedPoint && this.draggedEvt) {
       this.drag(this.draggedEvt);
     }
@@ -277,7 +345,13 @@ export class CanvasComponent implements OnInit, OnChanges, AfterViewInit {
   }
 
   drag(event: MouseEvent | TouchEvent) {
+    // console.log(`Вызван метод ${this.constructor.name}::drag`);
+
     if (this.draggedPoint || this.draggedEvt || this.draggedImage) {
+      console.log(`Вызван метод ${this.constructor.name}::drag`);
+      // console.log(`this.draggedImage ${JSON.stringify(this.draggedImage)},
+      //   this.draggedEvt ${JSON.stringify(this.draggedEvt)},
+      //   this.draggedPoint ${JSON.stringify(this.draggedPoint)}`);
 
       if (!this.dragWithoutClick && event instanceof MouseEvent && event.buttons === 0) {
         // Stop dragging if click is not maintained anymore.
@@ -341,6 +415,8 @@ export class CanvasComponent implements OnInit, OnChanges, AfterViewInit {
   }
 
 	setCursorPosition(location?: {x: number, y: number, decimals?: number}) {
-		this.cursorPosition.emit(location);
+    console.log(`Вызван метод ${this.constructor.name}::setCursorPosition`);
+
+    this.cursorPosition.emit(location);
 	}
 }

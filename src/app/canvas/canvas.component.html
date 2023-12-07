@@ -1,4 +1,8 @@
 <ng-container *ngIf="strokeWidth" >
+  <svg:g>
+  <!-- #grid
+    Две жирные линии по 0,0 сетки
+  -->
     <svg:line
         class="grid"
         [attr.x1]="viewPortX"
@@ -15,6 +19,12 @@
         [attr.y2]="viewPortY + viewPortHeight"
         [attr.stroke-width]="4*strokeWidth"
     />
+    <!-- #grid
+    Обычные тонкие линии.
+    Отрисовка сетки (линий по X)
+    В цикле для каждого xGrid,
+    если активирована showTicks === true, то каждая tickInterval (пятая) линия будет жирной (имеющая класс tick)
+    -->
     <svg:line *ngFor="let x of xGrid; trackBy:trackByIndex"
         class="grid"
         [ngClass]="{'tick': showTicks && x % tickInterval === 0 }"
@@ -25,6 +35,12 @@
         [attr.stroke-width]="strokeWidth"
     />
 
+    <!-- #grid
+    Отрисовка цифр к каждой tickInterval (пятой) линии
+    При условии что - режим не preview и включены showTicks (это когда каждая 5ая линия - жирная)
+
+    TODO Тут снова гоняются два цикла по xGrid и yGrid, хотя это можно было бы внедлить в циклы, при отрисовке линий (чтобы не гонятся одинаковые циклы дважды)
+    -->
     <ng-container *ngIf="!preview && showTicks">
         <ng-container *ngFor="let y of yGrid; trackBy:trackByIndex">
             <svg:text class="tick" *ngIf="y % tickInterval ===  0" [attr.x]="-4*strokeWidth" [attr.y]="y - 4*strokeWidth" [ngStyle]="{'font-size': strokeWidth*14+'px'}" >{{ y }}</text>
@@ -35,6 +51,12 @@
         </ng-container>
     </ng-container>
 
+    <!-- #grid
+    Обычные тонкие линии
+    Отрисовка сетки (линий по Y).
+    В цикле для каждого yGrid,
+    если активирована showTicks === true, то каждая tickInterval (пятая) линия будет жирной (имеющая класс tick)
+    -->
     <svg:line *ngFor="let y of yGrid; trackBy:trackByIndex"
         class="grid"
         [ngClass]="{'tick': showTicks && y % tickInterval === 0 }"
@@ -44,10 +66,13 @@
         [attr.y2]="y"
         [attr.stroke-width]="strokeWidth"
     />
+  </svg:g>
 
+    <!-- #image
+      Импортируемая картинка (только картинка, без элементов управления) -->
     <ng-container *ngIf="!preview">
         <ng-container *ngFor="let im of images">
-            <svg:image 
+            <svg:image
                 [attr.xlink:href]="im.data"
                 [attr.x]="min(im.x1,im.x2)"
                 [attr.y]="min(im.y1,im.y2)"
@@ -59,7 +84,10 @@
         </ng-container>
     </ng-container>
 
-
+    <!-- #path
+      Сам path (оконтовка, контур)
+      Если включен режим Fill, то присваивается класс filled
+    -->
     <svg:path
         [class.filled]="filled"
         [attr.d]="parsedPath?.asString()"
@@ -67,9 +95,13 @@
     />
 
 
+    <!-- Отображаются только тогда, когда НЕ редактируется картинка (в обычном режиме) -->
     <ng-container *ngIf="!editImages">
+
+        <!-- #controlPoints
+        Направляющие линии (второстипенные) -->
         <ng-container *ngFor="let loc of controlPoints; trackBy:trackByIndex">
-            <svg:line *ngFor="let rel of loc.relations; trackBy:trackByIndex" 
+            <svg:line *ngFor="let rel of loc.relations; trackBy:trackByIndex"
                 class="control"
                 [attr.x1]="loc.x"
                 [attr.y1]="loc.y"
@@ -79,17 +111,21 @@
             />
         </ng-container>
 
+        <!-- Линия, которая относится к выбранной точке над которой находится курсор (красного цвета) -->
         <svg:path *ngIf="hoveredItem && !draggedPoint && !preview"
             [attr.d]="hoveredItem.asStandaloneString()"
             [attr.stroke-width]="strokeWidth"
             class="hovered" />
 
+        <!-- Линия, которая относится к выбранной (selected) точке (синего цвета) -->
         <svg:path *ngIf="focusedItem  && !preview"
             [attr.d]="focusedItem.asStandaloneString()"
             [attr.stroke-width]="strokeWidth"
             class="dragged"
         />
 
+        <!-- #points
+        Печатаются основные (не второстипенные) точки -->
         <ng-container *ngFor="let loc of targetPoints; trackBy:trackByIndex">
             <svg:circle *ngIf="loc.movable"
                 class="target"
@@ -100,7 +136,7 @@
                 (touchstart)="startDrag(loc);$event.preventDefault();$event.stopPropagation()"
                 [attr.stroke-width]="12*strokeWidth"
                 (mouseenter)="hoveredItem=loc.itemReference; $event.stopPropagation()"
-                (mouseleave)="hoveredItem=null" 
+                (mouseleave)="hoveredItem=null"
                 [ngClass]="{
                     hovered:loc.itemReference===hoveredItem && !draggedPoint,
                     dragged:loc.itemReference===focusedItem
@@ -108,6 +144,10 @@
             />
         </ng-container>
 
+        <!-- #controlPoints
+          Направляющие (второстипенные, контрольные) точки, для безьё и прочих сложных компонентов
+          При наведении становятся красными (класс hovered), при выборе (класс dragged) синими
+        -->
         <ng-container *ngFor="let loc of controlPoints; trackBy:trackByIndex">
             <svg:circle *ngIf="loc.movable"
                 class="control"
@@ -118,7 +158,7 @@
                 (touchstart)="startDrag(loc);$event.preventDefault();$event.stopPropagation()"
                 [attr.stroke-width]="12*strokeWidth"
                 (mouseenter)="hoveredItem=loc.itemReference;  $event.stopPropagation()"
-                (mouseleave)="hoveredItem=null" 
+                (mouseleave)="hoveredItem=null"
                 [ngClass]="{
                     hovered:loc.itemReference===hoveredItem && !draggedPoint,
                     dragged:loc.itemReference===focusedItem
@@ -127,6 +167,8 @@
         </ng-container>
     </ng-container>
 
+    <!-- #image
+    Элементы управления импортируемой картинки (растяжка размера, перетаскивание, прозрачность, ..) -->
     <ng-container *ngIf="editImages && !preview">
         <svg:g *ngFor="let im of images" [class.focused-image]="im===focusedImage">
             <svg:rect  class="image-control move"
