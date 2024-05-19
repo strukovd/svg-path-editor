@@ -1,10 +1,43 @@
 <template>
-	<svg id="editor">
-		<g class="grid">
-			<line class="grid ng-star-inserted"
+	<svg
+		id="editor"
+		ref="editor"
+		:viewBox="viewBox"
+		@mousedown="activate"
+		@resize="()=>{ console.log(`resize`); }"
+	>
+		<defs>
+			<!-- Тут определять градиенты, анимации, и прочее на которое будут ссылатся элементы -->
+		</defs>
+		<path d="M0 0 L100 100 L0 100 Z"></path>
+		<!-- <g class="temp-example">
+		</g> -->
+		<g v-if="grid.enabled" class="grid">
+			<!-- Две жирные линии по 0,0 сетки -->
+			<line
+				class="grid"
+				:x1="viewPortX"
+				:y1="0"
+				:x2="viewPortX + viewPortWidth"
+				:y2="0"
+				:stroke-width="4*strokeWidth"
+			/>
+			<line
+				class="grid"
+				:x1="0"
+				:y1="viewPortY"
+				:x2="0"
+				:y2="viewPortY + viewPortHeight"
+				:stroke-width="4*strokeWidth"
+			/>
+
+			<!-- <line class="grid ng-star-inserted"
 				x1="-2.1085" y1="0"
 				x2="86.5915" y2="0"
-				strokeWidth="strokeWidth"></line>
+				strokeWidth="strokeWidth"></line> -->
+		</g>
+		<g class="images">
+
 		</g>
 		<g class="fill-path"></g>
 		<g class="control-points">
@@ -29,20 +62,40 @@ import { defineComponent } from 'vue';
 export default defineComponent({
 	data() {
 		return {
-			xGrid: [],
-			yGrid: [],
+			pEditor: null as any,
+			editorWidth: 0,
+			editorHeight: 0,
+			resizeObserver: null as any,
 
 			viewPortX: 0,
 			viewPortY: 0,
 			viewPortWidth: 0,
 			viewPortHeight: 0,
+
+			scale: 1,
+			stepScale: 0.1,
+			minScale: 0.1,
+
+			xGrid: [],
+			yGrid: [],
+
+			grid: {
+				enabled: true,
+				strokeWidth: 1,
+			}
 		};
 	},
 	computed: {
+		viewBox(): string {
+			return `${this.viewPortX} ${this.viewPortY} ${this.viewPortWidth} ${this.viewPortHeight}`;
+		},
+
 		strokeWidth() {
 			// return this.cfg.viewPortWidth / this.canvasWidth
 			return 1;
 		},
+
+
 		visiblePoints() {
 			/*
 			Т.к. планируется некая структура данных (kd-tree или quad-tree)
@@ -55,17 +108,74 @@ export default defineComponent({
 		}
 	},
 	methods: {
-		m() {
-			this.strokeWidth.toFixed();
+		moveCamera(xOffset: number, yOffset: number) {
+			const editor = this.$refs.editor as any;
+			// const editor = document.querySelector('#editor') as any;
+			editor.viewBox.baseVal.x -= xOffset;
+			editor.viewBox.baseVal.y -= yOffset;
+		},
+
+		// moving
+		activate(e: Event) { // onMouseDown
+			// Убедимся что тянется не дочерний элемент и блок позиционирован абсолютно
+			if(e.target ) { // === e.currentTarget ) {
+				(e.target as any).style.cursor = 'grabbing';
+
+				// Повесить на текущий блок событие move и deactivate
+				document.addEventListener("mousemove", this.move);
+				document.addEventListener("mouseup", this.deactivate);
+			}
+		},
+		move(e: MouseEvent) {
+			this.moveCamera(
+				e.movementX * this.scale,
+				e.movementY * this.scale
+			);
+		},
+		deactivate(e: MouseEvent) { // onMouseUp
+			document.removeEventListener("mousemove", this.move);
+			document.removeEventListener("mouseup", this.deactivate);
+			// Mover.actorData.element.removeEventListener("mouseout", Mover.deactivate); // TODO:
+			(e.target as any).style.cursor = '';
 		}
+
+		// resize
+
+		// rotate
+
+		// scale
+	},
+	mounted() {
+		// Инициализируем размер вьюпорта равным размеру svg, что бы не было проблем со скроллингом
+		this.pEditor = this.$refs.editor as any;
+		const svgHeight = this.pEditor.height.baseVal.value;
+		const svgWidth = this.pEditor.width.baseVal.value;
+		this.viewPortHeight = svgHeight;
+		this.viewPortWidth = svgWidth;
+
+		// Создаем наблюдатель за изменениями размера svg элемента
+		this.resizeObserver = new ResizeObserver((entries) => {
+			for (const entry of entries) {
+				this.viewPortHeight = Number( entry.contentRect.height.toFixed(2) );
+				this.viewPortWidth = Number( entry.contentRect.width.toFixed(2) );
+			}
+		});
+		this.resizeObserver.observe(this.pEditor);
+	},
+	unmounted() {
+		this.resizeObserver.unobserve(this.pEditor);
 	}
 });
 </script>
 
-<style scoped lang="scss">
+<style lang="scss">
 #editor {
 	width:100%;
 	background-color: #333;
 	height:100vh;
+
+	.grid {
+		stroke: red;
+	}
 }
 </style>

@@ -4,10 +4,21 @@
 	</header>
 	<main class="main-screen">
 		<section id="tool-bar">
-			circle
-			line
-			figure
-			...
+			circle<br>
+			line<br>
+			figure<br>
+			path<br>
+			M = moveto (move from one point to another point)
+			L = lineto (create a line)
+			H = horizontal lineto (create a horizontal line)
+			V = vertical lineto (create a vertical line)
+			C = curveto (create a curve)
+			S = smooth curveto (create a smooth curve)
+			Q = quadratic Bézier curve (create a quadratic Bézier curve)
+			T = smooth quadratic Bézier curveto (create a smooth quadratic Bézier curve)
+			A = elliptical Arc (create a elliptical arc)
+			Z = closepath (close the path)
+			...<br>
 		</section>
 		<div id="workspace">
 			<EditorComponent></EditorComponent>
@@ -76,7 +87,7 @@ export default defineComponent({
 		display: flex;
 
 		#tool-bar {
-
+			max-width:3em;
 		}
 		#workspace {
 			flex:auto 1 0;
