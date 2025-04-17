@@ -73,7 +73,7 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import EditorComponent from '@/components/Editor/EditorComponent.vue';
+import EditorComponent from '@/components/common/Editor/EditorComponent.vue';
 
 export default defineComponent({
 	components: {
