@@ -10,27 +10,14 @@
 			<!-- Тут определять градиенты, анимации, и прочее на которое будут ссылатся элементы -->
 		</defs>
 		<text x="0" y="150" class="small">{{ viewBox }}</text>
+		<text x="0" y="300" class="small">{{ visibleBounds }}</text>
 		<path d="M0 0 L100 100 L0 100 Z"></path>
 		<!-- <g class="temp-example">
 		</g> -->
 		<g v-if="grid.enabled" class="grid">
 			<!-- Две жирные линии по 0,0 сетки -->
-			<line
-				class="grid"
-				:x1="viewPortX"
-				:y1="0"
-				:x2="viewPortX + viewPortWidth"
-				:y2="0"
-				:stroke-width="4*grid.strokeWidth"
-			/>
-			<line
-				class="grid"
-				:x1="0"
-				:y1="viewPortY"
-				:x2="0"
-				:y2="viewPortY + viewPortHeight"
-				:stroke-width="4*grid.strokeWidth"
-			/>
+			<line class="grid" :x1="viewPortX" :y1="0" :x2="viewPortX + viewPortWidth" :y2="0" :stroke-width="4*grid.strokeWidth"/>
+			<line class="grid" :x1="0" :y1="viewPortY" :x2="0" :y2="viewPortY + viewPortHeight" :stroke-width="4*grid.strokeWidth"/>
 
 			<!-- <line class="grid ng-star-inserted"
 				x1="-2.1085" y1="0"
@@ -67,6 +54,9 @@ export default defineComponent({
 			editorWidth: 0,
 			editorHeight: 0,
 			resizeObserver: null as any,
+			moveDeltaX: 0,
+			moveDeltaY: 0,
+			moveRafId: null as number | null,
 
 			viewPortX: 0,
 			viewPortY: 0,
@@ -114,18 +104,27 @@ export default defineComponent({
 		viewBox(newValue: string, oldValue: string) {
 			if(this.grid.enabled) {
 				const [x, y, width, height] = newValue.split(' ');
+				const { left, top, right, bottom } = this.visibleBounds;
 				this.grid.xLines = [];
 				this.grid.yLines = [];
 			}
 		}
 	},
 	methods: {
-		moveCamera(xOffset: number, yOffset: number) {
-			const editor = this.$refs.editor as any;
-			// const editor = document.querySelector('#editor') as any;
-			this.viewPortX = editor.viewBox.baseVal.x -= xOffset;
-			this.viewPortY = editor.viewBox.baseVal.y -= yOffset;
-			// console.log(editor.viewBox.baseVal);
+		moveCamera(dx: number, dy: number) {
+			// Накапливаем смещение и применяем одним кадром через rAF для более плавного панорамирования.
+			this.moveDeltaX += dx * this.scale;
+			this.moveDeltaY += dy * this.scale;
+			// Если rAF ещё не запущен, запустим
+			if (this.moveRafId === null) {
+				this.moveRafId = requestAnimationFrame(() => {
+					this.viewPortX -= this.moveDeltaX;
+					this.viewPortY -= this.moveDeltaY;
+					this.moveDeltaX = 0;
+					this.moveDeltaY = 0;
+					this.moveRafId = null;
+				});
+			}
 		},
 
 		// MOVING
@@ -140,10 +139,7 @@ export default defineComponent({
 			}
 		},
 		move(e: MouseEvent) {
-			this.moveCamera(
-				e.movementX * this.scale,
-				e.movementY * this.scale
-			);
+			this.moveCamera(e.movementX, e.movementY);
 		},
 		deactivate(e: MouseEvent) { // onMouseUp
 			document.removeEventListener("mousemove", this.move);
@@ -180,6 +176,9 @@ export default defineComponent({
 	},
 	unmounted() {
 		this.resizeObserver.unobserve(this.pEditor);
+		if (this.moveRafId !== null) {
+			cancelAnimationFrame(this.moveRafId);
+		}
 	}
 });
 </script>
