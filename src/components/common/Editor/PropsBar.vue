@@ -14,19 +14,19 @@
 					<div style=" display: inline-block; font-size: .7em; color: #777;">#car</div>
 				</div>
 			</section>
+			<footer>
+				<div>
+					<span>Масштаб: {{scale}}%</span>
+				</div>
+			</footer>
 		</div>
 	</section>
 </template>
 
-<script lang="ts">
-	import { defineComponent } from 'vue';
-
-	export default defineComponent({
-		data() {
-		return {};
-		},
-		methods: {},
-	});
+<script setup lang="ts">
+defineProps({
+	scale: { type: Number, default: 100}
+})
 </script>
 
 <style lang="scss">

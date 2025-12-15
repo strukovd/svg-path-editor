@@ -21,23 +21,21 @@
 			...<br>
 		</section>
 		<div id="workspace">
-			<EditorComponent></EditorComponent>
+			<EditorComponent @scale="scale = $event"></EditorComponent>
 		</div>
-		<PropsBar/>
+		<PropsBar :scale="scale"/>
 	</main>
 	<footer>
 
 	</footer>
 </template>
 
-<script lang="ts">
-import { defineComponent } from 'vue';
+<script setup lang="ts">
+import { ref } from 'vue';
 import EditorComponent from '@/components/common/Editor/EditorComponent.vue';
 import PropsBar from '../common/Editor/PropsBar.vue';
 
-export default defineComponent({
-	components: { EditorComponent, PropsBar }
-});
+const scale = ref(100);
 </script>
 
 <style lang="scss">

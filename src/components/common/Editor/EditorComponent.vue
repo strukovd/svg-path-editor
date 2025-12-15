@@ -12,8 +12,10 @@
 		</defs>
 		<g v-if="grid.enabled" class="grid">
 			<!-- Две жирные линии по 0,0 сетки -->
-			<line class="grid" :x1="viewPortX" :y1="0" :x2="viewPortX + viewPortWidth" :y2="0" :stroke-width="grid.crossMultiplier*grid.strokeWidth"/>
-			<line class="grid" :x1="0" :y1="viewPortY" :x2="0" :y2="viewPortY + viewPortHeight" :stroke-width="grid.crossMultiplier*grid.strokeWidth"/>
+			<!-- <line class="grid" :x1="viewPortX" :y1="0" :x2="viewPortX + viewPortWidth" :y2="0" :stroke-width="grid.crossMultiplier*grid.strokeWidth"/> -->
+			<!-- <line class="grid" :x1="0" :y1="viewPortY" :x2="0" :y2="viewPortY + viewPortHeight" :stroke-width="grid.crossMultiplier*grid.strokeWidth"/> -->
+			<line class="grid" :x1="viewPortX - viewPortWidth * grid.crossPadding" :y1="0" :x2="viewPortX + viewPortWidth * (1 + grid.crossPadding)" :y2="0" :stroke-width="grid.crossMultiplier*grid.strokeWidth"/>
+			<line class="grid" :x1="0" :y1="viewPortY - viewPortHeight * grid.crossPadding" :x2="0" :y2="viewPortY + viewPortHeight * (1 + grid.crossPadding)" :stroke-width="grid.crossMultiplier*grid.strokeWidth"/>
 			<!-- Второстепенные линии -->
 			<line
 				v-for="x in grid.xLines"
@@ -35,11 +37,6 @@
 				:y2="y"
 				:stroke-width="grid.strokeWidth"
 			/>
-
-			<!-- <line class="grid ng-star-inserted"
-				x1="-2.1085" y1="0"
-				x2="86.5915" y2="0"
-				strokeWidth="strokeWidth"></line> -->
 		</g>
 		<g class="images">
 
@@ -70,6 +67,8 @@
 import { defineComponent } from 'vue';
 
 export default defineComponent({
+	name: 'EditorComponent',
+	emits: ['scale'],
 	data() {
 		return {
 			pEditor: null as any,
@@ -86,7 +85,7 @@ export default defineComponent({
 			viewPortHeight: 0,
 
 			scale: 1,
-			stepScale: 0.1,
+			stepScale: 0.2,
 			minScale: 0.1,
 
 			grid: {
@@ -95,7 +94,8 @@ export default defineComponent({
 				enabled: true,
 				strokeWidth: 0.5,
 				spacing: 10, // базовый шаг между второстепенными линиями
-				crossMultiplier: 4
+				crossMultiplier: 4,
+				crossPadding: 0.5, // на сколько шире видимой области рисуется центральный крест
 			}
 		};
 	},
@@ -122,19 +122,47 @@ export default defineComponent({
 			const right = left + this.viewPortWidth;
 			const bottom = top + this.viewPortHeight;
 			return { left, top, right, bottom };
-		}
+		},
 	},
 	watch:{
 		viewBox(newValue: string, oldValue: string) {
 			if(this.grid.enabled) {
 				this.updateGrid();
 			}
+		},
+
+		scale(newValue: number, oldValue: number) {
+			// TODO: убрать если вынесу параметры в pinia
+			let scale = newValue ?? 0;
+			if(scale) scale = Math.round((1 / scale) * 100);
+			this.$emit('scale', scale);
+			return scale;
 		}
 	},
 	methods: {
 		updateGrid() {
+			if (!this.editorWidth || !this.viewPortWidth) {
+				return;
+			}
 			const { left, right, top, bottom } = this.visibleBounds;
 			const padding = 0.5; // рисуем чуть шире видимой области
+
+			// Отключение сетки (линий будет слишком много, когда далеко)
+			if( this.scale > 2 ) {
+				this.grid.xLines = [];
+				this.grid.yLines = [];
+				return;
+			}
+
+			// Отключение сетки в расчете по пикселям
+			// const minPixelSpacing = 4; // расстояние в пикселях
+			// const spacingInPx = this.grid.spacing * (this.editorWidth / this.viewPortWidth);
+			// if (spacingInPx < minPixelSpacing) {
+			// 	this.grid.xLines = [];
+			// 	this.grid.yLines = [];
+			// 	return;
+			// }
+
 			const startX = Math.floor((left - this.viewPortWidth * padding) / this.grid.spacing) * this.grid.spacing;
 			const endX = Math.ceil((right + this.viewPortWidth * padding) / this.grid.spacing) * this.grid.spacing;
 			const startY = Math.floor((top - this.viewPortHeight * padding) / this.grid.spacing) * this.grid.spacing;
@@ -162,8 +190,8 @@ export default defineComponent({
 			// Если rAF ещё не запущен, запустим
 			if (this.moveRafId === null) {
 				this.moveRafId = requestAnimationFrame(() => {
-					this.viewPortX -= this.moveDeltaX;
-					this.viewPortY -= this.moveDeltaY;
+					this.viewPortX = this.round(this.viewPortX - this.moveDeltaX);
+					this.viewPortY = this.round(this.viewPortY - this.moveDeltaY);
 					this.moveDeltaX = 0;
 					this.moveDeltaY = 0;
 					this.moveRafId = null;
@@ -190,15 +218,20 @@ export default defineComponent({
 			const newViewPortX = pointerX - (pointerX - this.viewPortX) * (newWidth / this.viewPortWidth);
 			const newViewPortY = pointerY - (pointerY - this.viewPortY) * (newHeight / this.viewPortHeight);
 
-			this.viewPortX = newViewPortX;
-			this.viewPortY = newViewPortY;
-			this.viewPortWidth = newWidth;
-			this.viewPortHeight = newHeight;
+			this.viewPortX = this.round(newViewPortX);
+			this.viewPortY = this.round(newViewPortY);
+			this.viewPortWidth = this.round(newWidth);
+			this.viewPortHeight = this.round(newHeight);
 
 			// Обновляем коэффициент для перемещения (пиксель -> мировые координаты).
 			if (this.editorWidth) {
 				this.scale = this.viewPortWidth / this.editorWidth;
 			}
+		},
+
+		round(value: number, digits = 4): number {
+			if (this.scale < 1) return value; // Если масштаб увеличен (меньше 1), то не округляем (иначе баги)
+			return Number(value.toFixed(digits)); // при 100% и отдалении - округляем, просто для сокращения длинных чисел
 		},
 
 		// MOVING
