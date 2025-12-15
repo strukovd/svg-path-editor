@@ -4,6 +4,7 @@
 		ref="editor"
 		:viewBox="viewBox"
 		@mousedown="activate"
+		@wheel.prevent="onWheel"
 		@resize="()=>{ console.log(`resize`); }"
 	>
 		<defs>
@@ -170,6 +171,36 @@ export default defineComponent({
 			}
 		},
 
+		onWheel(e: WheelEvent) {
+			if (!e.altKey) {
+				return;
+			}
+			const svgEl = this.$refs.editor as SVGSVGElement;
+			const rect = svgEl.getBoundingClientRect();
+			const pointerX = this.viewPortX + (e.clientX - rect.left) * (this.viewPortWidth / rect.width);
+			const pointerY = this.viewPortY + (e.clientY - rect.top) * (this.viewPortHeight / rect.height);
+
+			const direction = Math.sign(e.deltaY) || 1;
+			const factor = Math.pow(1 + this.stepScale, direction);
+
+			const newWidth = Math.max(this.minScale, this.viewPortWidth * factor);
+			const newHeight = Math.max(this.minScale, this.viewPortHeight * factor);
+
+			// Масштабируем относительно точки под курсором.
+			const newViewPortX = pointerX - (pointerX - this.viewPortX) * (newWidth / this.viewPortWidth);
+			const newViewPortY = pointerY - (pointerY - this.viewPortY) * (newHeight / this.viewPortHeight);
+
+			this.viewPortX = newViewPortX;
+			this.viewPortY = newViewPortY;
+			this.viewPortWidth = newWidth;
+			this.viewPortHeight = newHeight;
+
+			// Обновляем коэффициент для перемещения (пиксель -> мировые координаты).
+			if (this.editorWidth) {
+				this.scale = this.viewPortWidth / this.editorWidth;
+			}
+		},
+
 		// MOVING
 		activate(e: Event) { // onMouseDown
 			// Убедимся что тянется не дочерний элемент и блок позиционирован абсолютно
@@ -207,6 +238,7 @@ export default defineComponent({
 		const svgWidth = this.editorWidth = Math.trunc(this.pEditor.width.baseVal.value);
 		this.viewPortHeight = svgHeight;
 		this.viewPortWidth = svgWidth;
+		this.scale = this.viewPortWidth / this.editorWidth;
 		if (this.grid.enabled) this.updateGrid();
 
 		// Создаем наблюдатель за изменениями размера svg элемента
@@ -214,6 +246,7 @@ export default defineComponent({
 			for (const entry of entries) {
 				this.viewPortHeight = Number( entry.contentRect.height.toFixed(2) );
 				this.viewPortWidth = Number( entry.contentRect.width.toFixed(2) );
+				this.scale = this.viewPortWidth / this.editorWidth;
 				if (this.grid.enabled) this.updateGrid();
 			}
 		});
