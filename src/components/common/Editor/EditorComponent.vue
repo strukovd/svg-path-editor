@@ -18,9 +18,9 @@
 			<line class="grid" :x1="0" :y1="viewPortY - viewPortHeight * grid.crossPadding" :x2="0" :y2="viewPortY + viewPortHeight * (1 + grid.crossPadding)" :stroke-width="grid.crossMultiplier*grid.strokeWidth"/>
 			<!-- Второстепенные линии -->
 			<line
-				v-for="x in grid.xLines"
+				v-for="x of grid.xLines"
 				:key="`x-${x}`"
-				class="grid"
+				:class="[`grid`, {tick: x % (grid.spacing*5) === 0}]"
 				:x1="x"
 				:y1="viewPortY - viewPortHeight * 0.5"
 				:x2="x"
@@ -28,9 +28,9 @@
 				:stroke-width="grid.strokeWidth"
 			/>
 			<line
-				v-for="y in grid.yLines"
+				v-for="y of grid.yLines"
 				:key="`y-${y}`"
-				class="grid"
+				:class="[`grid`, {tick: y % (grid.spacing*5) === 0}]"
 				:x1="viewPortX - viewPortWidth * 0.5"
 				:y1="y"
 				:x2="viewPortX + viewPortWidth * 1.5"
@@ -50,9 +50,11 @@
 		</g>
 
 
-		<text x="0" y="150" class="small">{{ viewBox }}</text>
-		<text x="0" y="300" class="small">{{ visibleBounds }}</text>
-		<path fill="#ffffff22" stroke="#ffffff" d="M0 0 L100 100 L0 100 Z"></path>
+		<g name="debug" fill="whitesmoke">
+			<text x="0" y="150" class="small">{{ viewBox }}</text>
+			<text x="0" y="300" class="small">{{ visibleBounds }}</text>
+			<path fill="#ffffff22" stroke="#ffffff" d="M0 0 L100 100 L0 100 Z"></path>
+		</g>
 	</svg>
 </template>
 
@@ -296,6 +298,7 @@ export default defineComponent({
 
 <style lang="scss">
 #editor {
+	user-select: none;
 	width:100%;
 	background-color: var(--editor-color);
 	height:100vh;
@@ -304,6 +307,12 @@ export default defineComponent({
 		stroke: #353536;
 		// stroke-width: 1px;
 		// stroke-opacity: 0.5;
+
+		&.tick {
+			stroke: #353536;
+			stroke-width: 1px;
+			// stroke-opacity: 0.5;
+		}
 	}
 }
 </style>
