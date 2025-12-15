@@ -9,15 +9,31 @@
 		<defs>
 			<!-- Тут определять градиенты, анимации, и прочее на которое будут ссылатся элементы -->
 		</defs>
-		<text x="0" y="150" class="small">{{ viewBox }}</text>
-		<text x="0" y="300" class="small">{{ visibleBounds }}</text>
-		<path d="M0 0 L100 100 L0 100 Z"></path>
-		<!-- <g class="temp-example">
-		</g> -->
 		<g v-if="grid.enabled" class="grid">
 			<!-- Две жирные линии по 0,0 сетки -->
-			<line class="grid" :x1="viewPortX" :y1="0" :x2="viewPortX + viewPortWidth" :y2="0" :stroke-width="4*grid.strokeWidth"/>
-			<line class="grid" :x1="0" :y1="viewPortY" :x2="0" :y2="viewPortY + viewPortHeight" :stroke-width="4*grid.strokeWidth"/>
+			<line class="grid" :x1="viewPortX" :y1="0" :x2="viewPortX + viewPortWidth" :y2="0" :stroke-width="grid.crossMultiplier*grid.strokeWidth"/>
+			<line class="grid" :x1="0" :y1="viewPortY" :x2="0" :y2="viewPortY + viewPortHeight" :stroke-width="grid.crossMultiplier*grid.strokeWidth"/>
+			<!-- Второстепенные линии -->
+			<line
+				v-for="x in grid.xLines"
+				:key="`x-${x}`"
+				class="grid"
+				:x1="x"
+				:y1="viewPortY - viewPortHeight * 0.5"
+				:x2="x"
+				:y2="viewPortY + viewPortHeight * 1.5"
+				:stroke-width="grid.strokeWidth"
+			/>
+			<line
+				v-for="y in grid.yLines"
+				:key="`y-${y}`"
+				class="grid"
+				:x1="viewPortX - viewPortWidth * 0.5"
+				:y1="y"
+				:x2="viewPortX + viewPortWidth * 1.5"
+				:y2="y"
+				:stroke-width="grid.strokeWidth"
+			/>
 
 			<!-- <line class="grid ng-star-inserted"
 				x1="-2.1085" y1="0"
@@ -34,6 +50,11 @@
 		<g class="points">
 
 		</g>
+
+
+		<text x="0" y="150" class="small">{{ viewBox }}</text>
+		<text x="0" y="300" class="small">{{ visibleBounds }}</text>
+		<path fill="#ffffff22" stroke="#ffffff" d="M0 0 L100 100 L0 100 Z"></path>
 	</svg>
 </template>
 
@@ -68,10 +89,12 @@ export default defineComponent({
 			minScale: 0.1,
 
 			grid: {
-				xLines: [],
-				yLines: [],
+				xLines: [] as number[],
+				yLines: [] as number[],
 				enabled: true,
-				strokeWidth: 1,
+				strokeWidth: 0.5,
+				spacing: 10, // базовый шаг между второстепенными линиями
+				crossMultiplier: 4
 			}
 		};
 	},
@@ -103,14 +126,34 @@ export default defineComponent({
 	watch:{
 		viewBox(newValue: string, oldValue: string) {
 			if(this.grid.enabled) {
-				const [x, y, width, height] = newValue.split(' ');
-				const { left, top, right, bottom } = this.visibleBounds;
-				this.grid.xLines = [];
-				this.grid.yLines = [];
+				this.updateGrid();
 			}
 		}
 	},
 	methods: {
+		updateGrid() {
+			const { left, right, top, bottom } = this.visibleBounds;
+			const padding = 0.5; // рисуем чуть шире видимой области
+			const startX = Math.floor((left - this.viewPortWidth * padding) / this.grid.spacing) * this.grid.spacing;
+			const endX = Math.ceil((right + this.viewPortWidth * padding) / this.grid.spacing) * this.grid.spacing;
+			const startY = Math.floor((top - this.viewPortHeight * padding) / this.grid.spacing) * this.grid.spacing;
+			const endY = Math.ceil((bottom + this.viewPortHeight * padding) / this.grid.spacing) * this.grid.spacing;
+
+			const xLines: number[] = [];
+			for(let x = startX; x <= endX; x += this.grid.spacing) {
+				if (x !== 0) { // нулевая рисуется отдельно как жирная
+					xLines.push(x);
+				}
+			}
+			const yLines: number[] = [];
+			for(let y = startY; y <= endY; y += this.grid.spacing) {
+				if (y !== 0) {
+					yLines.push(y);
+				}
+			}
+			this.grid.xLines = xLines;
+			this.grid.yLines = yLines;
+		},
 		moveCamera(dx: number, dy: number) {
 			// Накапливаем смещение и применяем одним кадром через rAF для более плавного панорамирования.
 			this.moveDeltaX += dx * this.scale;
@@ -164,12 +207,14 @@ export default defineComponent({
 		const svgWidth = this.editorWidth = Math.trunc(this.pEditor.width.baseVal.value);
 		this.viewPortHeight = svgHeight;
 		this.viewPortWidth = svgWidth;
+		if (this.grid.enabled) this.updateGrid();
 
 		// Создаем наблюдатель за изменениями размера svg элемента
 		this.resizeObserver = new ResizeObserver((entries) => {
 			for (const entry of entries) {
 				this.viewPortHeight = Number( entry.contentRect.height.toFixed(2) );
 				this.viewPortWidth = Number( entry.contentRect.width.toFixed(2) );
+				if (this.grid.enabled) this.updateGrid();
 			}
 		});
 		this.resizeObserver.observe(this.pEditor);
@@ -190,7 +235,9 @@ export default defineComponent({
 	height:100vh;
 
 	.grid {
-		stroke: red;
+		stroke: #353536;
+		// stroke-width: 1px;
+		// stroke-opacity: 0.5;
 	}
 }
 </style>
