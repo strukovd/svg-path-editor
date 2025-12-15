@@ -9,6 +9,7 @@
 		<defs>
 			<!-- Тут определять градиенты, анимации, и прочее на которое будут ссылатся элементы -->
 		</defs>
+		<text x="0" y="150" class="small">{{ viewBox }}</text>
 		<path d="M0 0 L100 100 L0 100 Z"></path>
 		<!-- <g class="temp-example">
 		</g> -->
@@ -20,7 +21,7 @@
 				:y1="0"
 				:x2="viewPortX + viewPortWidth"
 				:y2="0"
-				:stroke-width="4*strokeWidth"
+				:stroke-width="4*grid.strokeWidth"
 			/>
 			<line
 				class="grid"
@@ -28,7 +29,7 @@
 				:y1="viewPortY"
 				:x2="0"
 				:y2="viewPortY + viewPortHeight"
-				:stroke-width="4*strokeWidth"
+				:stroke-width="4*grid.strokeWidth"
 			/>
 
 			<!-- <line class="grid ng-star-inserted"
@@ -76,10 +77,9 @@ export default defineComponent({
 			stepScale: 0.1,
 			minScale: 0.1,
 
-			xGrid: [],
-			yGrid: [],
-
 			grid: {
+				xLines: [],
+				yLines: [],
 				enabled: true,
 				strokeWidth: 1,
 			}
@@ -88,13 +88,8 @@ export default defineComponent({
 	computed: {
 		viewBox(): string {
 			return `${this.viewPortX} ${this.viewPortY} ${this.viewPortWidth} ${this.viewPortHeight}`;
+			// return `${this.viewPortX} ${this.viewPortY} ${this.viewPortWidth} ${this.viewPortHeight}`;
 		},
-
-		strokeWidth() {
-			// return this.cfg.viewPortWidth / this.canvasWidth
-			return 1;
-		},
-
 
 		visiblePoints() {
 			/*
@@ -105,17 +100,35 @@ export default defineComponent({
 			точек должен пересчитыватся
 			*/
 			return [];
+		},
+
+		visibleBounds() {
+			const left = this.viewPortX;
+			const top = this.viewPortY;
+			const right = left + this.viewPortWidth;
+			const bottom = top + this.viewPortHeight;
+			return { left, top, right, bottom };
+		}
+	},
+	watch:{
+		viewBox(newValue: string, oldValue: string) {
+			if(this.grid.enabled) {
+				const [x, y, width, height] = newValue.split(' ');
+				this.grid.xLines = [];
+				this.grid.yLines = [];
+			}
 		}
 	},
 	methods: {
 		moveCamera(xOffset: number, yOffset: number) {
 			const editor = this.$refs.editor as any;
 			// const editor = document.querySelector('#editor') as any;
-			editor.viewBox.baseVal.x -= xOffset;
-			editor.viewBox.baseVal.y -= yOffset;
+			this.viewPortX = editor.viewBox.baseVal.x -= xOffset;
+			this.viewPortY = editor.viewBox.baseVal.y -= yOffset;
+			// console.log(editor.viewBox.baseVal);
 		},
 
-		// moving
+		// MOVING
 		activate(e: Event) { // onMouseDown
 			// Убедимся что тянется не дочерний элемент и блок позиционирован абсолютно
 			if(e.target ) { // === e.currentTarget ) {
@@ -139,17 +152,20 @@ export default defineComponent({
 			(e.target as any).style.cursor = '';
 		}
 
-		// resize
+		// RESIZING
 
-		// rotate
+		// ROTATING
 
-		// scale
+		// SCALING
+
+
+
 	},
 	mounted() {
 		// Инициализируем размер вьюпорта равным размеру svg, что бы не было проблем со скроллингом
 		this.pEditor = this.$refs.editor as any;
-		const svgHeight = this.pEditor.height.baseVal.value;
-		const svgWidth = this.pEditor.width.baseVal.value;
+		const svgHeight = this.editorHeight = Math.trunc(this.pEditor.height.baseVal.value);
+		const svgWidth = this.editorWidth = Math.trunc(this.pEditor.width.baseVal.value);
 		this.viewPortHeight = svgHeight;
 		this.viewPortWidth = svgWidth;
 
@@ -171,7 +187,7 @@ export default defineComponent({
 <style lang="scss">
 #editor {
 	width:100%;
-	background-color: #333;
+	background-color: var(--editor-color);
 	height:100vh;
 
 	.grid {

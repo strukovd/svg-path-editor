@@ -4,67 +4,26 @@
 	</header>
 	<main class="main-screen">
 		<section id="tool-bar">
-			circle<br>
-			line<br>
-			figure<br>
-			path<br>
-			M = moveto (move from one point to another point)
-			L = lineto (create a line)
-			H = horizontal lineto (create a horizontal line)
-			V = vertical lineto (create a vertical line)
-			C = curveto (create a curve)
-			S = smooth curveto (create a smooth curve)
-			Q = quadratic Bézier curve (create a quadratic Bézier curve)
-			T = smooth quadratic Bézier curveto (create a smooth quadratic Bézier curve)
-			A = elliptical Arc (create a elliptical arc)
-			Z = closepath (close the path)
+			<div>circle</div>
+			<div>line</div>
+			<div>figure</div>
+			<div>path</div>
+			<div title="moveto (move from one point to another point)">M</div>
+			<div title="lineto (create a line)">L</div>
+			<div title="horizontal lineto (create a horizontal line)">H</div>
+			<div title="vertical lineto (create a vertical line)">V</div>
+			<div title="curveto (create a curve)">C</div>
+			<div title="smooth curveto (create a smooth curve)">S</div>
+			<div title="quadratic Bézier curve (create a quadratic Bézier curve)">Q</div>
+			<div title="smooth quadratic Bézier curveto (create a smooth quadratic Bézier curve)">T</div>
+			<div title="elliptical Arc (create a elliptical arc)">A</div>
+			<div title="closepath (close the path)">Z</div>
 			...<br>
 		</section>
 		<div id="workspace">
 			<EditorComponent></EditorComponent>
 		</div>
-		<aside id="props-bar">
-			<section id="path-string">
-				<textarea id="" cols="30" rows="10"></textarea>
-			</section>
-			<section>
-				<div style="margin: 0 .6em;">
-					<div style="
-						display: inline-block;
-						font-size: 0.7em;
-						background: darkviolet;
-						color: whitesmoke;
-						line-height: 1.6em;
-						padding: 0 0.6em;
-						border-radius: 4px;
-						margin-right: .8em;
-					">path</div>
-					<div style="
-						display: inline-block;
-						font-size: .7em;
-						color: #777;
-					">#star</div>
-				</div>
-
-				<div style="margin: 0 .6em;">
-					<div style="
-						display: inline-block;
-						font-size: 0.7em;
-						background: #177fd1;
-						color: whitesmoke;
-						line-height: 1.6em;
-						padding: 0 0.6em;
-						border-radius: 4px;
-						margin-right: .8em;
-					">group</div>
-					<div style="
-						display: inline-block;
-						font-size: .7em;
-						color: #777;
-					">#car</div>
-				</div>
-			</section>
-		</aside>
+		<PropsBar/>
 	</main>
 	<footer>
 
@@ -74,11 +33,10 @@
 <script lang="ts">
 import { defineComponent } from 'vue';
 import EditorComponent from '@/components/common/Editor/EditorComponent.vue';
+import PropsBar from '../common/Editor/PropsBar.vue';
 
 export default defineComponent({
-	components: {
-		EditorComponent
-	}
+	components: { EditorComponent, PropsBar }
 });
 </script>
 
