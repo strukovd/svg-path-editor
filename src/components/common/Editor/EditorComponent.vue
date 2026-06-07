@@ -11,49 +11,94 @@
 			<!-- Тут определять градиенты, анимации, и прочее на которое будут ссылатся элементы -->
 		</defs>
 		<g v-if="grid.enabled" class="grid">
-			<!-- Две жирные линии по 0,0 сетки -->
-			<!-- <line class="grid" :x1="viewPortX" :y1="0" :x2="viewPortX + viewPortWidth" :y2="0" :stroke-width="grid.crossMultiplier*grid.strokeWidth"/> -->
-			<!-- <line class="grid" :x1="0" :y1="viewPortY" :x2="0" :y2="viewPortY + viewPortHeight" :stroke-width="grid.crossMultiplier*grid.strokeWidth"/> -->
-			<line class="grid" :x1="viewPortX - viewPortWidth * grid.crossPadding" :y1="0" :x2="viewPortX + viewPortWidth * (1 + grid.crossPadding)" :y2="0" :stroke-width="grid.crossMultiplier*grid.strokeWidth"/>
-			<line class="grid" :x1="0" :y1="viewPortY - viewPortHeight * grid.crossPadding" :x2="0" :y2="viewPortY + viewPortHeight * (1 + grid.crossPadding)" :stroke-width="grid.crossMultiplier*grid.strokeWidth"/>
+			<!-- Две жирные линии по 0,0 сетки (Центральный крест) -->
+			<line class="grid" x1="0" y1="-100%" x2="0" y2="200%" :stroke-width="grid.crossLineThickness * scale"/>
+			<line class="grid" x1="-100%" y1="0" x2="200%" y2="0" :stroke-width="grid.crossLineThickness * scale"/>
+
 			<!-- Второстепенные линии -->
 			<line
 				v-for="x of grid.xLines"
 				:key="`x-${x}`"
-				:class="[`grid`, {tick: x % (grid.spacing*5) === 0}]"
+				:class="[`grid`, {tick: x % grid.majorGap === 0}]"
 				:x1="x"
 				:y1="viewPortY - viewPortHeight * 0.5"
 				:x2="x"
 				:y2="viewPortY + viewPortHeight * 1.5"
-				:stroke-width="grid.strokeWidth"
+				:stroke-width="getLineThickness(x, scale)"
 			/>
 			<line
 				v-for="y of grid.yLines"
 				:key="`y-${y}`"
-				:class="[`grid`, {tick: y % (grid.spacing*5) === 0}]"
+				:class="[`grid`, {tick: y % grid.majorGap === 0}]"
 				:x1="viewPortX - viewPortWidth * 0.5"
 				:y1="y"
 				:x2="viewPortX + viewPortWidth * 1.5"
 				:y2="y"
-				:stroke-width="grid.strokeWidth"
+				:stroke-width="getLineThickness(y, scale)"
 			/>
 		</g>
+
 		<g class="images">
 
 		</g>
-		<g class="fill-path"></g>
-		<g class="control-points">
-			<!-- Дополнительные магнитные точки -->
-		</g>
-		<g class="points">
+		<g class="active-path">
+			<path
+				v-if="activePathD"
+				:d="activePathD"
+				class="shape"
+				fill="#ffffff22"
+				stroke="#ffffff"
+				:stroke-width="grid.crossLineThickness*grid.baseLineThickness*scale"
+			/>
 
-		</g>
+			<!-- Контрольные линии -->
+			<g class="control-lines">
+				<line
+					v-for="ctrl of controlPoints"
+					:key="`ctrl-line-${ctrl.itemReference.getType()}-${ctrl.x}-${ctrl.y}`"
+					class="control-line"
+					:x1="ctrl.relations[0]?.x ?? ctrl.x"
+					:y1="ctrl.relations[0]?.y ?? ctrl.y"
+					:x2="ctrl.x"
+					:y2="ctrl.y"
+					vector-effect="non-scaling-stroke"
+					:stroke-width="grid.baseLineThickness"
+				/>
+			</g>
 
+			<!-- Контрольные точки -->
+			<g class="control-points">
+				<circle
+					v-for="ctrl of controlPoints"
+					:key="`ctrl-${ctrl.itemReference.getType()}-${ctrl.x}-${ctrl.y}`"
+					class="control-point"
+					:cx="ctrl.x"
+					:cy="ctrl.y"
+					:r="pointRadius"
+					vector-effect="non-scaling-stroke"
+					@mousedown.stop.prevent="startDragPoint(ctrl, $event)"
+				/>
+			</g>
+
+			<!-- Вершины -->
+			<g class="points">
+				<circle
+					v-for="pt of anchorPoints"
+					:key="`pt-${pt.x}-${pt.y}`"
+					class="anchor-point"
+					:cx="pt.x"
+					:cy="pt.y"
+					:r="pointRadius"
+					vector-effect="non-scaling-stroke"
+					@mousedown.stop.prevent="startDragPoint(pt, $event)"
+				/>
+			</g>
+		</g>
 
 		<g name="debug" fill="whitesmoke">
 			<text x="0" y="150" class="small">{{ viewBox }}</text>
 			<text x="0" y="300" class="small">{{ visibleBounds }}</text>
-			<path fill="#ffffff22" stroke="#ffffff" d="M0 0 L100 100 L0 100 Z"></path>
+			<!-- <path fill="#ffffff22" stroke="#ffffff" :d="activePathD"></path> -->
 		</g>
 	</svg>
 </template>
@@ -67,9 +112,23 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
+import { useEditorStore } from '@/stores/EditorStore';
+import { AnchorPoint, ControlPoint } from '@/lib/svg';
+import { useEditorGrid } from '../../../composables/useEditorGrid';
 
 export default defineComponent({
 	name: 'EditorComponent',
+	setup() {
+		const editorStore = useEditorStore();
+		const editorGrid = useEditorGrid();
+		editorStore.ensureInitialized();
+		return {
+			editorStore,
+			grid: editorGrid.grid,
+			getLineThickness: editorGrid.getLineThickness,
+			updateEditorGrid: editorGrid.updateGrid,
+		};
+	},
 	emits: ['scale'],
 	data() {
 		return {
@@ -80,6 +139,9 @@ export default defineComponent({
 			moveDeltaX: 0,
 			moveDeltaY: 0,
 			moveRafId: null as number | null,
+			draggedPoint: null as AnchorPoint | ControlPoint | null,
+			dragMoveHandler: null as ((e: MouseEvent) => void) | null,
+			dragUpHandler: null as ((e: MouseEvent) => void) | null,
 
 			viewPortX: 0,
 			viewPortY: 0,
@@ -89,22 +151,40 @@ export default defineComponent({
 			scale: 1,
 			stepScale: 0.2,
 			minScale: 0.1,
-
-			grid: {
-				xLines: [] as number[],
-				yLines: [] as number[],
-				enabled: true,
-				strokeWidth: 0.5,
-				spacing: 10, // базовый шаг между второстепенными линиями
-				crossMultiplier: 4,
-				crossPadding: 0.5, // на сколько шире видимой области рисуется центральный крест
-			}
 		};
 	},
 	computed: {
 		viewBox(): string {
 			return `${this.viewPortX} ${this.viewPortY} ${this.viewPortWidth} ${this.viewPortHeight}`;
 			// return `${this.viewPortX} ${this.viewPortY} ${this.viewPortWidth} ${this.viewPortHeight}`;
+		},
+
+		activePathD(): string {
+			const el = this.editorStore?.activeElement;
+			if (el && el.type === 'path') {
+				return el.data.asString();
+			}
+			return 'M168 200H279C282.542 200 285.932 198.756 289 197 292.068 195.244 295.23 193.041 297 190 298.77 186.959 300.002 183.51 300 179.999 299.998 176.488 298.773 173.04 297 170.001L222 41C220.23 37.96 218.067 35.7552 215 34 211.933 32.2448 207.542 31 204 31 200.458 31 197.067 32.2448 194 34 190.933 35.7552 188.77 37.96 187 41L168 74 130 9.9976C128.228 6.9578 126.068 3.7549 123 2 119.932.2451 116.542 0 113 0 109.458 0 106.068.2451 103 2 99.9323 3.7549 96.7717 6.9578 95 9.9976L2 170.001C.227 173.04.0015 176.488 0 179.999-.0015 183.51.2296 186.959 2 190 3.7704 193.04 6.9325 195.244 10 197 13.0675 198.756 16.4578 200 20 200H90C117.737 200 137.925 187.558 152 164L186 105 204 74 259 168H182L168 200ZM89 168H40L113 42 150 105 125.491 147.725C116.144 163.01 105.488 168 89 168Z';
+		},
+
+		anchorPoints(): AnchorPoint[] {
+			const el = this.editorStore?.activeElement;
+			if (el && el.type === 'path') {
+				return el.data.targetLocations();
+			}
+			return [];
+		},
+
+		controlPoints(): ControlPoint[] {
+			const el = this.editorStore?.activeElement;
+			if (el && el.type === 'path') {
+				return el.data.controlLocations();
+			}
+			return [];
+		},
+
+		pointRadius(): number {
+			return 3 * this.scale; // Math.max(3 * this.scale, 3);
 		},
 
 		visiblePoints() {
@@ -143,47 +223,13 @@ export default defineComponent({
 	},
 	methods: {
 		updateGrid() {
-			if (!this.editorWidth || !this.viewPortWidth) {
-				return;
-			}
-			const { left, right, top, bottom } = this.visibleBounds;
-			const padding = 0.5; // рисуем чуть шире видимой области
-
-			// Отключение сетки (линий будет слишком много, когда далеко)
-			if( this.scale > 2 ) {
-				this.grid.xLines = [];
-				this.grid.yLines = [];
-				return;
-			}
-
-			// Отключение сетки в расчете по пикселям
-			// const minPixelSpacing = 4; // расстояние в пикселях
-			// const spacingInPx = this.grid.spacing * (this.editorWidth / this.viewPortWidth);
-			// if (spacingInPx < minPixelSpacing) {
-			// 	this.grid.xLines = [];
-			// 	this.grid.yLines = [];
-			// 	return;
-			// }
-
-			const startX = Math.floor((left - this.viewPortWidth * padding) / this.grid.spacing) * this.grid.spacing;
-			const endX = Math.ceil((right + this.viewPortWidth * padding) / this.grid.spacing) * this.grid.spacing;
-			const startY = Math.floor((top - this.viewPortHeight * padding) / this.grid.spacing) * this.grid.spacing;
-			const endY = Math.ceil((bottom + this.viewPortHeight * padding) / this.grid.spacing) * this.grid.spacing;
-
-			const xLines: number[] = [];
-			for(let x = startX; x <= endX; x += this.grid.spacing) {
-				if (x !== 0) { // нулевая рисуется отдельно как жирная
-					xLines.push(x);
-				}
-			}
-			const yLines: number[] = [];
-			for(let y = startY; y <= endY; y += this.grid.spacing) {
-				if (y !== 0) {
-					yLines.push(y);
-				}
-			}
-			this.grid.xLines = xLines;
-			this.grid.yLines = yLines;
+			this.updateEditorGrid({
+				editorWidth: this.editorWidth,
+				viewPortWidth: this.viewPortWidth,
+				viewPortHeight: this.viewPortHeight,
+				visibleBounds: this.visibleBounds,
+				scale: this.scale,
+			});
 		},
 		moveCamera(dx: number, dy: number) {
 			// Накапливаем смещение и применяем одним кадром через rAF для более плавного панорамирования.
@@ -231,6 +277,45 @@ export default defineComponent({
 			}
 		},
 
+		clientToWorld(e: MouseEvent) {
+			const svgEl = this.$refs.editor as SVGSVGElement;
+			const rect = svgEl.getBoundingClientRect();
+			const x = this.viewPortX + (e.clientX - rect.left) * (this.viewPortWidth / rect.width);
+			const y = this.viewPortY + (e.clientY - rect.top) * (this.viewPortHeight / rect.height);
+			return { x, y };
+		},
+
+		startDragPoint(pt: AnchorPoint | ControlPoint, e: MouseEvent) {
+			this.draggedPoint = pt;
+			this.dragMoveHandler = (evt: MouseEvent) => this.dragPoint(evt);
+			this.dragUpHandler = () => this.stopDragPoint();
+			document.addEventListener('mousemove', this.dragMoveHandler);
+			document.addEventListener('mouseup', this.dragUpHandler);
+		},
+		dragPoint(e: MouseEvent) {
+			if (!this.draggedPoint) return;
+			const pos = this.clientToWorld(e);
+			this.editorStore.updateActivePath(path => {
+				path.setLocation(this.draggedPoint as any, pos);
+			}, false);
+		},
+		stopDragPoint() {
+			if (this.draggedPoint) {
+				// финализируем шаг в историю
+				this.editorStore.pushHistory();
+			}
+			this.draggedPoint = null;
+			if (this.dragMoveHandler) {
+				document.removeEventListener('mousemove', this.dragMoveHandler);
+				this.dragMoveHandler = null;
+			}
+			if (this.dragUpHandler) {
+				document.removeEventListener('mouseup', this.dragUpHandler);
+				this.dragUpHandler = null;
+			}
+			this.updateGrid();
+		},
+
 		round(value: number, digits = 4): number {
 			if (this.scale < 1) return value; // Если масштаб увеличен (меньше 1), то не округляем (иначе баги)
 			return Number(value.toFixed(digits)); // при 100% и отдалении - округляем, просто для сокращения длинных чисел
@@ -255,6 +340,7 @@ export default defineComponent({
 			document.removeEventListener("mouseup", this.deactivate);
 			// Mover.actorData.element.removeEventListener("mouseout", Mover.deactivate); // TODO:
 			(e.target as any).style.cursor = '';
+			this.stopDragPoint();
 		}
 
 		// RESIZING
@@ -309,9 +395,44 @@ export default defineComponent({
 		// stroke-opacity: 0.5;
 
 		&.tick {
-			stroke: #353536;
-			stroke-width: 1px;
+			// stroke: #353536;
+			// stroke-width: 1px;
 			// stroke-opacity: 0.5;
+		}
+	}
+
+	.active-path {
+		.shape {
+			fill: #ffffff11;
+			stroke: #ffffff;
+		}
+		.points .anchor-point {
+			fill: #2e2e2e;
+			stroke: transparent;
+			stroke-width:10px;
+			cursor: pointer;
+			&:hover {
+				fill: #0091bd;
+			}
+			&.active {
+				fill: #0091bd;
+			}
+		}
+		.control-points .control-point {
+			fill: #00c2ff;
+			stroke: transparent;
+			stroke-width:10px;
+			cursor: pointer;
+			&:hover {
+				fill: #0091bd;
+			}
+			&.active {
+				fill: #0091bd;
+			}
+		}
+		.control-lines .control-line {
+			stroke: #00c2ff;
+			stroke-dasharray: 4 4;
 		}
 	}
 }
