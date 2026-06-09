@@ -1,3 +1,4 @@
+import { useEditorStore } from '@/stores';
 import { reactive } from 'vue';
 
 
@@ -15,6 +16,7 @@ const isMajorLine = (n: number): boolean => {
 }
 
 export function useEditorGrid() {
+	const s = useEditorStore();
 	const grid = reactive({
 		xLines: [] as number[],
 		yLines: [] as number[],
@@ -34,32 +36,25 @@ export function useEditorGrid() {
 		return baseWidth;
 	}
 
-	function updateGrid(options: UpdateEditorGridOptions) {
-		const {
-			viewPortWidth,
-			viewPortHeight,
-			visibleBounds,
-			scale,
-		} = options;
-
-		if (!viewPortWidth) {
+	function updateGrid() {
+		if (!s.editor.width) {
 			return;
 		}
 
-		const { left, right, top, bottom } = visibleBounds;
-		const padding = 0.5; // рисуем чуть шире видимой области
-
 		// Отключение сетки (линий будет слишком много, когда далеко)
-		if (scale > 2) {
+		if (s.scale > 2) {
 			grid.xLines = [];
 			grid.yLines = [];
 			return;
 		}
 
-		const startX = Math.floor((left - viewPortWidth * padding) / grid.baseLineGap) * grid.baseLineGap;
-		const endX = Math.ceil((right + viewPortWidth * padding) / grid.baseLineGap) * grid.baseLineGap;
-		const startY = Math.floor((top - viewPortHeight * padding) / grid.baseLineGap) * grid.baseLineGap;
-		const endY = Math.ceil((bottom + viewPortHeight * padding) / grid.baseLineGap) * grid.baseLineGap;
+		const padding = 0.5; // рисуем чуть шире видимой области (0.5 = половина)
+		const paddingX = s.editor.width * padding;
+		const paddingY = s.editor.height * padding;
+		const startX = Math.floor((s.camera.x - paddingX) / grid.baseLineGap) * grid.baseLineGap;
+		const endX = Math.ceil((s.camera.width + paddingX) / grid.baseLineGap) * grid.baseLineGap;
+		const startY = Math.floor((s.camera.y - paddingY) / grid.baseLineGap) * grid.baseLineGap;
+		const endY = Math.ceil((s.camera.height + paddingY) / grid.baseLineGap) * grid.baseLineGap;
 
 		const xLines: number[] = [];
 		for (let x = startX; x <= endX; x += grid.baseLineGap) {
@@ -84,20 +79,4 @@ export function useEditorGrid() {
 		getLineThickness,
 		updateGrid,
 	};
-}
-
-
-export interface EditorGridBounds {
-	left: number;
-	top: number;
-	right: number;
-	bottom: number;
-}
-
-export interface UpdateEditorGridOptions {
-	editorWidth: number;
-	viewPortWidth: number;
-	viewPortHeight: number;
-	visibleBounds: EditorGridBounds;
-	scale: number;
 }
