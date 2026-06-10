@@ -14,8 +14,8 @@
 			</defs>
 			<g v-if="grid.enabled" class="grid">
 				<!-- Две жирные линии по 0,0 сетки (Центральный крест) -->
-				<line class="grid" x1="0" y1="-100%" x2="0" y2="200%" :stroke-width="grid.crossLineThickness * s.scale"/>
-				<line class="grid" x1="-100%" y1="0" x2="200%" y2="0" :stroke-width="grid.crossLineThickness * s.scale"/>
+				<line class="grid" x1="0" y1="-100%" x2="0" y2="200%" :stroke-width="grid.crossLineThickness * s.camera.scale"/>
+				<line class="grid" x1="-100%" y1="0" x2="200%" y2="0" :stroke-width="grid.crossLineThickness * s.camera.scale"/>
 	
 				<!-- Второстепенные линии -->
 				<line
@@ -26,7 +26,7 @@
 					:y1="s.camera.y - s.camera.height * 0.5"
 					:x2="x"
 					:y2="s.camera.y + s.camera.height * 1.5"
-					:stroke-width="getLineThickness(x, s.scale)"
+					:stroke-width="getLineThickness(x, s.camera.scale)"
 				/>
 				<line
 					v-for="y of grid.yLines"
@@ -36,7 +36,7 @@
 					:y1="y"
 					:x2="s.camera.x + s.camera.width * 1.5"
 					:y2="y"
-					:stroke-width="getLineThickness(y, s.scale)"
+					:stroke-width="getLineThickness(y, s.camera.scale)"
 				/>
 			</g>
 	
@@ -50,7 +50,7 @@
 					class="shape"
 					fill="#ffffff22"
 					stroke="#ffffff"
-					:stroke-width="grid.crossLineThickness * grid.baseLineThickness * s.scale"
+					:stroke-width="grid.crossLineThickness * grid.baseLineThickness * s.camera.scale"
 				/>
 	
 				<!-- Контрольные линии -->
@@ -177,7 +177,7 @@ export default defineComponent({
 		},
 
 		pointRadius(): number {
-			return 3 * this.s.scale; // Math.max(3 * this.camera.scale, 3);
+			return 3 * this.s.camera.scale; // Math.max(3 * this.camera.scale, 3);
 		},
 
 		visiblePoints() {
@@ -209,8 +209,8 @@ export default defineComponent({
 	methods: {
 		moveCamera(dx: number, dy: number) {
 			// Накапливаем смещение и применяем одним кадром через rAF для более плавного панорамирования.
-			this.moveDeltaX += dx * this.s.scale;
-			this.moveDeltaY += dy * this.s.scale;
+			this.moveDeltaX += dx * this.s.camera.scale;
+			this.moveDeltaY += dy * this.s.camera.scale;
 			// Если rAF ещё не запущен, запустим
 			if (this.moveRafId === null) {
 				this.moveRafId = requestAnimationFrame(() => {
@@ -263,7 +263,7 @@ export default defineComponent({
 		},
 
 		round(value: number, digits = 4): number {
-			if (this.s.scale < 1) return value; // Если масштаб увеличен (меньше 1), то не округляем (иначе баги)
+			if (this.s.camera.scale < 1) return value; // Если масштаб увеличен (меньше 1), то не округляем (иначе баги)
 			return Number(value.toFixed(digits)); // при 100% и отдалении - округляем, просто для сокращения длинных чисел
 		},
 
@@ -307,7 +307,7 @@ export default defineComponent({
 		const svgWidth = this.s.editor.width = Math.trunc(this.pEditor.width.baseVal.value); // ширина
 		this.s.camera.height = svgHeight;
 		this.s.camera.width = svgWidth;
-		this.s.scale = BASE_SCALE;
+		this.s.camera.scale = BASE_SCALE;
 		if (this.grid.enabled) this.updateGrid();
 
 		// Создаем наблюдатель за изменениями размера svg элемента
@@ -315,7 +315,7 @@ export default defineComponent({
 			for (const entry of entries) {
 				this.s.camera.height = Number( entry.contentRect.height.toFixed(2) );
 				this.s.camera.width = Number( entry.contentRect.width.toFixed(2) );
-				this.s.scale = BASE_SCALE;
+				this.s.camera.scale = BASE_SCALE;
 				if (this.grid.enabled) this.updateGrid();
 			}
 		});

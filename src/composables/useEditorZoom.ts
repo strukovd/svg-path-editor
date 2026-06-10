@@ -8,7 +8,7 @@ export function useEditorZoom() {
 
 	// Логика округления инкапсулирована внутри модуля
 	function round(value: number, digits = 4): number {
-		if (s.scale < 1) return value;
+		if (s.camera.scale < 1) return value;
 		return Number(value.toFixed(digits));
 	}
 
@@ -31,10 +31,10 @@ export function useEditorZoom() {
 		const pointerY = s.camera.y + (e.clientY - rect.top) * (s.camera.height / rect.height);
 
 		const direction = Math.sign(e.deltaY) || 1; // 
-		const factor = Math.pow(1 + stepScale, direction); // 
+		const factor = Math.pow(1 + s.camera.stepScale, direction); // 
 
-		const newWidth = Math.max(minScale, s.camera.width * factor);
-		const newHeight = Math.max(minScale, s.camera.height * factor);
+		const newWidth = Math.max(s.camera.minScale, s.camera.width * factor);
+		const newHeight = Math.max(s.camera.minScale, s.camera.height * factor);
 
 		// Масштабируем относительно точки под курсором
 		const newViewPortX = pointerX - (pointerX - s.camera.x) * (newWidth / s.camera.width);
@@ -47,7 +47,7 @@ export function useEditorZoom() {
 		s.camera.height = round(newHeight);
 
 		// Обновляем значение текущего scale
-		s.scale = s.camera.width / s.editor.width;
+		s.camera.scale = s.camera.width / s.editor.width;
 	}
 
 	return {

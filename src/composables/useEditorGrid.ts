@@ -42,7 +42,7 @@ export function useEditorGrid() {
 		}
 
 		// Отключение сетки (линий будет слишком много, когда далеко)
-		if (s.scale > 2) {
+		if (s.camera.scale > 2) {
 			grid.xLines = [];
 			grid.yLines = [];
 			return;
