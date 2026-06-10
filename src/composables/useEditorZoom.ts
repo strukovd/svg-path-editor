@@ -1,23 +1,10 @@
-// useEditorZoom.ts
-import { reactive, ref } from 'vue';
 import { useEditorStore } from '@/stores/EditorStore';
 
-interface ZoomOptions {
-	initialWidth: number;
-	initialHeight: number;
-	minScale?: number;
-	stepScale?: number;
-	// onViewportChange?: () => void; // Тот самый IoC-колбэк
-}
 
-export function useEditorZoom(options: ZoomOptions = { initialWidth: 0, initialHeight: 0 }) {
+export function useEditorZoom() {
 	const s = useEditorStore();
-	const {
-		initialWidth,
-		initialHeight,
-		minScale = 0.1,
-		stepScale = 0.2,
-	} = options;
+	const minScale = 0.1;
+	const stepScale = 0.2;
 
 	// Логика округления инкапсулирована внутри модуля
 	function round(value: number, digits = 4): number {
@@ -61,11 +48,6 @@ export function useEditorZoom(options: ZoomOptions = { initialWidth: 0, initialH
 
 		// Обновляем значение текущего scale
 		s.scale = s.camera.width / s.editor.width;
-
-		// Вызываем внешнее уведомление (IoC), если кто-то подписался
-		// if (onViewportChange) {
-		// 	onViewportChange();
-		// }
 	}
 
 	return {
