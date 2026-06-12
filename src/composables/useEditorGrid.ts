@@ -1,5 +1,5 @@
 import { useEditorStore } from '@/stores';
-import { reactive } from 'vue';
+import { reactive, watch } from 'vue';
 
 
 const BASE_LINE_THICKNESS = 0.5; // базовая толщина линий сетки
@@ -9,6 +9,8 @@ const CROSS_LINE_THICKNESS = BASE_LINE_THICKNESS * 4; // центральные 
 const DEFAULT_LINE_GAP = 10; // расстояние между линиями сетки
 const MAJOR_LINE_FREQUENCY = 5; // Частота\кратность major линий (каждая n-я линия будет толще)
 const MAJOR_GAP = MAJOR_LINE_FREQUENCY * DEFAULT_LINE_GAP; // расстояние между major линиями
+
+let gridWatcher: any = null;
 
 const isMajorLine = (n: number): boolean => {
 	// Определяет является ли линия толстой (major) или тонкой (minor)
@@ -26,6 +28,24 @@ export function useEditorGrid() {
 		baseLineGap: DEFAULT_LINE_GAP,
 		crossLineThickness: CROSS_LINE_THICKNESS, // в сколько раз центральный крест жирнее обычных линий
 	});
+
+	// Инициализация наблюдателя сетки
+	if(gridWatcher === null) {
+		gridWatcher = watch(() => [
+				s.camera.x,
+				s.camera.y,
+				s.camera.width,
+				s.camera.height,
+				s.camera.scale,
+				s.editor.width,
+				s.editor.height,
+				grid.enabled,
+			],
+			() => updateGrid(),
+			{ immediate: true }
+		);
+	}
+
 
 	function getLineThickness(n: number, scale: number): number {
 		// Определяет является ли линия толстой (major)
@@ -51,6 +71,7 @@ export function useEditorGrid() {
 		const padding = 0.5; // рисуем чуть шире видимой области (0.5 = половина)
 		const paddingX = s.editor.width * padding;
 		const paddingY = s.editor.height * padding;
+		// Math.floor - нужна для целочисленного округления
 		const startX = Math.floor((s.camera.x - paddingX) / grid.baseLineGap) * grid.baseLineGap;
 		const endX = Math.ceil((s.camera.width + paddingX) / grid.baseLineGap) * grid.baseLineGap;
 		const startY = Math.floor((s.camera.y - paddingY) / grid.baseLineGap) * grid.baseLineGap;

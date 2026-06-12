@@ -16,7 +16,7 @@
 				<!-- Две жирные линии по 0,0 сетки (Центральный крест) -->
 				<line class="grid" x1="0" y1="-100%" x2="0" y2="200%" :stroke-width="grid.crossLineThickness * s.camera.scale"/>
 				<line class="grid" x1="-100%" y1="0" x2="200%" y2="0" :stroke-width="grid.crossLineThickness * s.camera.scale"/>
-	
+
 				<!-- Второстепенные линии -->
 				<line
 					v-for="x of grid.xLines"
@@ -202,13 +202,6 @@ export default defineComponent({
 			return { left, top, right, bottom };
 		},
 	},
-	watch:{
-		viewBox(newValue: string, oldValue: string) {
-			if(this.grid.enabled) {
-				this.updateGrid();
-			}
-		},
-	},
 	methods: {
 
 		startDragPoint(pt: AnchorPoint | ControlPoint, e: MouseEvent) {
@@ -268,7 +261,7 @@ export default defineComponent({
 		this.s.camera.height = svgHeight;
 		this.s.camera.width = svgWidth;
 		this.s.camera.scale = BASE_SCALE;
-		if (this.grid.enabled) this.updateGrid();
+		// if (this.grid.enabled) this.updateGrid();
 
 		// Создаем наблюдатель за изменениями размера svg элемента
 		this.resizeObserver = new ResizeObserver((entries) => {
@@ -276,7 +269,7 @@ export default defineComponent({
 				this.s.camera.height = Number( entry.contentRect.height.toFixed(2) );
 				this.s.camera.width = Number( entry.contentRect.width.toFixed(2) );
 				this.s.camera.scale = BASE_SCALE;
-				if (this.grid.enabled) this.updateGrid();
+				// if (this.grid.enabled) this.updateGrid();
 			}
 		});
 		this.resizeObserver.observe(this.pEditor);

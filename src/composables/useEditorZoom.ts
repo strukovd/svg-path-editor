@@ -3,9 +3,6 @@ import { useEditorStore } from '@/stores/EditorStore';
 
 export function useEditorZoom() {
 	const s = useEditorStore();
-	const minScale = 0.1;
-	const stepScale = 0.2;
-
 	// Логика округления инкапсулирована внутри модуля
 	function round(value: number, digits = 4): number {
 		if (s.camera.scale < 1) return value;
