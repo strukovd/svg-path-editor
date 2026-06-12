@@ -118,6 +118,7 @@ import { useEditorStore } from '@/stores/EditorStore';
 import { AnchorPoint, ControlPoint } from '@/lib/svg';
 import { useEditorGrid } from '../../../composables/useEditorGrid';
 import { useEditorZoom } from '@/composables/useEditorZoom';
+import { useEditorMover } from '@/composables/useEditorMover';
 
 export default defineComponent({
 	name: 'EditorComponent',
@@ -125,13 +126,15 @@ export default defineComponent({
 		const editorStore = useEditorStore();
 		const editorGrid = useEditorGrid();
 		const editorZoom = useEditorZoom();
+		const editorMover = useEditorMover();
 		editorStore.ensureInitialized();
 		return {
 			s: editorStore,
 			grid: editorGrid.grid,
 			getLineThickness: editorGrid.getLineThickness,
 			updateGrid: editorGrid.updateGrid,
-			onWheel: editorZoom.onWheel
+			onWheel: editorZoom.onWheel,
+			activate: editorMover.activate,
 		};
 	},
 	data() {
@@ -140,7 +143,7 @@ export default defineComponent({
 			resizeObserver: null as any,
 			moveDeltaX: 0,
 			moveDeltaY: 0,
-			moveRafId: null as number | null,
+			// moveRafId: null as number | null,
 			draggedPoint: null as AnchorPoint | ControlPoint | null,
 			dragMoveHandler: null as ((e: MouseEvent) => void) | null,
 			dragUpHandler: null as ((e: MouseEvent) => void) | null,
@@ -207,29 +210,6 @@ export default defineComponent({
 		},
 	},
 	methods: {
-		moveCamera(dx: number, dy: number) {
-			// Накапливаем смещение и применяем одним кадром через rAF для более плавного панорамирования.
-			this.moveDeltaX += dx * this.s.camera.scale;
-			this.moveDeltaY += dy * this.s.camera.scale;
-			// Если rAF ещё не запущен, запустим
-			if (this.moveRafId === null) {
-				this.moveRafId = requestAnimationFrame(() => {
-					this.s.camera.x = this.round(this.s.camera.x - this.moveDeltaX);
-					this.s.camera.y = this.round(this.s.camera.y - this.moveDeltaY);
-					this.moveDeltaX = 0;
-					this.moveDeltaY = 0;
-					this.moveRafId = null;
-				});
-			}
-		},
-
-		clientToWorld(e: MouseEvent) {
-			const svgEl = this.$refs.editor as SVGSVGElement;
-			const rect = svgEl.getBoundingClientRect();
-			const x = this.viewPortX + (e.clientX - rect.left) * (this.viewPortWidth / rect.width);
-			const y = this.viewPortY + (e.clientY - rect.top) * (this.viewPortHeight / rect.height);
-			return { x, y };
-		},
 
 		startDragPoint(pt: AnchorPoint | ControlPoint, e: MouseEvent) {
 			this.draggedPoint = pt;
@@ -240,7 +220,7 @@ export default defineComponent({
 		},
 		dragPoint(e: MouseEvent) {
 			if (!this.draggedPoint) return;
-			const pos = this.clientToWorld(e);
+			const pos = this.s.clientToWorld(e.clientX, e.clientY, e.currentTarget as SVGSVGElement);
 			this.s.updateActivePath(path => {
 				path.setLocation(this.draggedPoint as any, pos);
 			}, false);
@@ -268,26 +248,6 @@ export default defineComponent({
 		},
 
 		// MOVING
-		activate(e: Event) { // onMouseDown
-			// Убедимся что тянется не дочерний элемент и блок позиционирован абсолютно
-			if(e.target ) { // === e.currentTarget ) {
-				(e.target as any).style.cursor = 'grabbing';
-
-				// Повесить на текущий блок событие move и deactivate
-				document.addEventListener("mousemove", this.move);
-				document.addEventListener("mouseup", this.deactivate);
-			}
-		},
-		move(e: MouseEvent) {
-			this.moveCamera(e.movementX, e.movementY);
-		},
-		deactivate(e: MouseEvent) { // onMouseUp
-			document.removeEventListener("mousemove", this.move);
-			document.removeEventListener("mouseup", this.deactivate);
-			// Mover.actorData.element.removeEventListener("mouseout", Mover.deactivate); // TODO:
-			(e.target as any).style.cursor = '';
-			this.stopDragPoint();
-		}
 
 		// RESIZING
 
