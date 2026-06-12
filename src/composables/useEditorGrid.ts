@@ -1,5 +1,5 @@
 import { useEditorStore } from '@/stores';
-import { reactive, watch } from 'vue';
+import { reactive, watch, type WatchStopHandle } from 'vue';
 
 
 const BASE_LINE_THICKNESS = 0.5; // базовая толщина линий сетки
@@ -10,24 +10,25 @@ const DEFAULT_LINE_GAP = 10; // расстояние между линиями �
 const MAJOR_LINE_FREQUENCY = 5; // Частота\кратность major линий (каждая n-я линия будет толще)
 const MAJOR_GAP = MAJOR_LINE_FREQUENCY * DEFAULT_LINE_GAP; // расстояние между major линиями
 
-let gridWatcher: any = null;
+const grid = reactive({
+	xLines: [] as number[],
+	yLines: [] as number[],
+	enabled: true,
+	majorGap: MAJOR_GAP, // каждые tick линий - более толстая линия
+	baseLineThickness: BASE_LINE_THICKNESS,
+	baseLineGap: DEFAULT_LINE_GAP,
+	crossLineThickness: CROSS_LINE_THICKNESS, // в сколько раз центральный крест жирнее обычных линий
+});
+
+let gridWatcher: WatchStopHandle | null = null;
 
 const isMajorLine = (n: number): boolean => {
 	// Определяет является ли линия толстой (major) или тонкой (minor)
-	return n % MAJOR_GAP === 0;
+	return n % grid.majorGap === 0;
 }
 
 export function useEditorGrid() {
 	const s = useEditorStore();
-	const grid = reactive({
-		xLines: [] as number[],
-		yLines: [] as number[],
-		enabled: true,
-		majorGap: MAJOR_LINE_FREQUENCY * DEFAULT_LINE_GAP, // каждые tick линий - более толстая линия
-		baseLineThickness: BASE_LINE_THICKNESS,
-		baseLineGap: DEFAULT_LINE_GAP,
-		crossLineThickness: CROSS_LINE_THICKNESS, // в сколько раз центральный крест жирнее обычных линий
-	});
 
 	// Инициализация наблюдателя сетки
 	if(gridWatcher === null) {
