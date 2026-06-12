@@ -21,7 +21,6 @@
 			</section>
 			<footer>
 				<div>
-					{{ s.camera.scale }}
 					<span>Масштаб: {{scale}}%</span>
 				</div>
 			</footer>

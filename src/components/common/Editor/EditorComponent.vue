@@ -12,34 +12,7 @@
 			<defs>
 				<!-- Тут определять градиенты, анимации, и прочее на которое будут ссылатся элементы -->
 			</defs>
-			<g v-if="grid.enabled" class="grid">
-				<!-- Две жирные линии по 0,0 сетки (Центральный крест) -->
-				<line class="grid" x1="0" y1="-100%" x2="0" y2="200%" :stroke-width="grid.crossLineThickness * s.camera.scale"/>
-				<line class="grid" x1="-100%" y1="0" x2="200%" y2="0" :stroke-width="grid.crossLineThickness * s.camera.scale"/>
-
-				<!-- Второстепенные линии -->
-				<line
-					v-for="x of grid.xLines"
-					:key="`x-${x}`"
-					:class="[`grid`, {tick: x % grid.majorGap === 0}]"
-					:x1="x"
-					:y1="s.camera.y - s.camera.height * 0.5"
-					:x2="x"
-					:y2="s.camera.y + s.camera.height * 1.5"
-					:stroke-width="getLineThickness(x, s.camera.scale)"
-				/>
-				<line
-					v-for="y of grid.yLines"
-					:key="`y-${y}`"
-					:class="[`grid`, {tick: y % grid.majorGap === 0}]"
-					:x1="s.camera.x - s.camera.width * 0.5"
-					:y1="y"
-					:x2="s.camera.x + s.camera.width * 1.5"
-					:y2="y"
-					:stroke-width="getLineThickness(y, s.camera.scale)"
-				/>
-			</g>
-	
+			<SceneGrid/>
 			<g class="images">
 	
 			</g>
@@ -98,8 +71,8 @@
 			</g>
 	
 			<g name="debug" fill="whitesmoke">
-				<text x="0" y="150" class="small">{{ viewBox }}</text>
-				<text x="0" y="300" class="small">{{ visibleBounds }}</text>
+				<text x="0" y="150">{{ viewBox }}</text>
+				<text x="0" y="300">{{ visibleBounds }}</text>
 			</g>
 		</svg>
 	</section>
@@ -119,9 +92,13 @@ import { AnchorPoint, ControlPoint } from '@/lib/svg';
 import { useEditorGrid } from '../../../composables/useEditorGrid';
 import { useEditorZoom } from '@/composables/useEditorZoom';
 import { useEditorMover } from '@/composables/useEditorMover';
+import SceneGrid from './SceneGrid.vue';
 
 export default defineComponent({
 	name: 'EditorComponent',
+	components: {
+		SceneGrid,
+	},
 	setup() {
 		const editorStore = useEditorStore();
 		const editorGrid = useEditorGrid();
@@ -131,8 +108,6 @@ export default defineComponent({
 		return {
 			s: editorStore,
 			grid: editorGrid.grid,
-			getLineThickness: editorGrid.getLineThickness,
-			updateGrid: editorGrid.updateGrid,
 			onWheel: editorZoom.onWheel,
 			activate: editorMover.activate,
 		};
@@ -232,7 +207,7 @@ export default defineComponent({
 				document.removeEventListener('mouseup', this.dragUpHandler);
 				this.dragUpHandler = null;
 			}
-			this.updateGrid();
+			// this.updateGrid();
 		},
 
 		round(value: number, digits = 4): number {
@@ -261,7 +236,6 @@ export default defineComponent({
 		this.s.camera.height = svgHeight;
 		this.s.camera.width = svgWidth;
 		this.s.camera.scale = BASE_SCALE;
-		// if (this.grid.enabled) this.updateGrid();
 
 		// Создаем наблюдатель за изменениями размера svg элемента
 		this.resizeObserver = new ResizeObserver((entries) => {
@@ -269,7 +243,6 @@ export default defineComponent({
 				this.s.camera.height = Number( entry.contentRect.height.toFixed(2) );
 				this.s.camera.width = Number( entry.contentRect.width.toFixed(2) );
 				this.s.camera.scale = BASE_SCALE;
-				// if (this.grid.enabled) this.updateGrid();
 			}
 		});
 		this.resizeObserver.observe(this.pEditor);
@@ -291,18 +264,6 @@ export default defineComponent({
 	width:100%;
 	background-color: var(--editor-color);
 	height:100vh;
-
-	.grid {
-		stroke: #353536;
-		// stroke-width: 1px;
-		// stroke-opacity: 0.5;
-
-		&.tick {
-			// stroke: #353536;
-			// stroke-width: 1px;
-			// stroke-opacity: 0.5;
-		}
-	}
 
 	.active-path {
 		.shape {
