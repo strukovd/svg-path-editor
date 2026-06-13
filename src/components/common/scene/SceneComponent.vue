@@ -13,9 +13,7 @@
 				<!-- Тут определять градиенты, анимации, и прочее на которое будут ссылатся элементы -->
 			</defs>
 			<SceneGrid/>
-			<g class="images">
-	
-			</g>
+			<SceneReferenceImage/>
 			<g class="active-path">
 				<path
 					v-if="activePathD"
@@ -93,6 +91,7 @@ import { useSceneGrid } from '../../../composables/useSceneGrid.ts';
 import { useSceneZoom } from '@/composables/useSceneZoom.ts';
 import { useSceneMover } from '@/composables/useSceneMover.ts';
 import SceneGrid from './SceneGrid.vue';
+import SceneReferenceImage from './SceneReferenceImage.vue';
 const s = useSceneStore();
 const sceneGrid = useSceneGrid();
 
