@@ -1,11 +1,11 @@
 import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router';
-import MainView from '../components/pages/MainView.vue';
+import MainPage from '../components/pages/MainPage.vue';
 
 const routes: Array<RouteRecordRaw> = [
 	{
-		name: `MainView`,
+		name: `MainPage`,
 		path: `/`,
-		component: MainView
+		component: MainPage
 	}
 ];
 
