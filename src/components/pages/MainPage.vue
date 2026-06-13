@@ -20,7 +20,7 @@
 			...<br>
 		</section>
 		<div id="workspace">
-			<EditorComponent/>
+			<SceneComponent/>
 		</div>
 		<PropsBar/>
 	</main>
@@ -30,8 +30,8 @@
 </template>
 
 <script lang="ts" setup>
-import EditorComponent from '@/components/common/Editor/EditorComponent.vue';
-import PropsBar from '../common/Editor/PropsBar.vue';
+import SceneComponent from '@/components/common/scene/SceneComponent.vue';
+import PropsBar from '../common/scene/PropsBar.vue';
 </script>
 
 <style lang="scss">

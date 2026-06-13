@@ -1,8 +1,8 @@
-import { useEditorStore } from '@/stores/EditorStore';
+import { useSceneStore } from '@/stores/SceneStore';
 
 
-export function useEditorMover() {
-	const s = useEditorStore();
+export function useSceneMover() {
+	const s = useSceneStore();
 
 	// Накапливаемые смещения для rAF
 	let moveDeltaX = 0;
@@ -13,7 +13,7 @@ export function useEditorMover() {
 	function activate(e: MouseEvent) {
 		if (!e.target) return;
 		// Меняем курсор на "кулак"
-		(e.target as any).style.cursor = 'grabbing';
+		(e.target as any).style.setProperty('cursor', 'grabbing', 'important');
 		// Вешаем глобальные события движения и отпускания
 		document.addEventListener('mousemove', onMouseMove);
 		document.addEventListener('mouseup', onMouseUp);

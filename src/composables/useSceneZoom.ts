@@ -1,9 +1,9 @@
-import { useEditorStore } from '@/stores/EditorStore';
+import { useSceneStore } from '@/stores/SceneStore';
 
 
-export function useEditorZoom() {
-	const s = useEditorStore();
-	// Логика округления инкапсулирована внутри модуля
+export function useSceneZoom() {
+	const s = useSceneStore();
+
 	function round(value: number, digits = 4): number {
 		if (s.camera.scale < 1) return value;
 		return Number(value.toFixed(digits));
@@ -14,7 +14,7 @@ export function useEditorZoom() {
 			return;
 		}
 
-		if(!s.editor.width) {
+		if(!s.scene.width) {
 			console.error(`Ширина редактора не определена`);
 			return;
 		}
@@ -44,7 +44,7 @@ export function useEditorZoom() {
 		s.camera.height = round(newHeight);
 
 		// Обновляем значение текущего scale
-		s.camera.scale = s.camera.width / s.editor.width;
+		s.camera.scale = s.camera.width / s.scene.width;
 	}
 
 	return {

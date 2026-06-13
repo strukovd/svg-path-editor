@@ -5,7 +5,7 @@
 				<textarea id="" cols="30" rows="10"></textarea>
 			</section>
 			<section>
-				<div v-for="(element, index) of useEditorStore().elements" :key="element.id" style="margin: 0 .6em;">
+				<div v-for="(element, index) of useSceneStore().elements" :key="element.id" style="margin: 0 .6em;">
 					<div style=" display: inline-block; font-size: 0.7em; background: darkviolet; color: whitesmoke; line-height: 1.6em; padding: 0 0.6em; border-radius: 4px; margin-right: .8em;">{{ element.type }}</div>
 					<div style=" display: inline-block; font-size: .7em; color: #777;">#{{ element.id }}</div>
 				</div>
@@ -29,15 +29,15 @@
 </template>
 
 <script setup lang="ts">
-import { useEditorStore } from '@/stores/EditorStore';
+import { useSceneStore } from '@/stores/SceneStore';
 import { computed } from 'vue';
-const s = useEditorStore();
+const s = useSceneStore();
 const scale = computed(() => Math.round((1 / s.camera.scale) * 100));
 </script>
 
 <style lang="scss">
 #wr-props-bar {
-	// background-color: var(--editor-color);
+	// background-color: var(--scene-color);
 	// padding:1em;
 
 	border-radius:8px;

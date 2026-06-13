@@ -1,4 +1,4 @@
-import { useEditorStore } from '@/stores';
+import { useSceneStore } from '@/stores';
 import { reactive, watch, type WatchStopHandle } from 'vue';
 
 
@@ -27,8 +27,8 @@ const isMajorLine = (n: number): boolean => {
 	return n % grid.majorGap === 0;
 }
 
-export function useEditorGrid() {
-	const s = useEditorStore();
+export function useSceneGrid() {
+	const s = useSceneStore();
 
 	// Инициализация наблюдателя сетки
 	if(gridWatcher === null) {
@@ -38,8 +38,8 @@ export function useEditorGrid() {
 				s.camera.width,
 				s.camera.height,
 				s.camera.scale,
-				s.editor.width,
-				s.editor.height,
+				s.scene.width,
+				s.scene.height,
 				grid.enabled,
 			],
 			() => updateGrid(),
@@ -58,7 +58,7 @@ export function useEditorGrid() {
 	}
 
 	function updateGrid() {
-		if (!s.editor.width) {
+		if (!s.scene.width) {
 			return;
 		}
 
@@ -70,8 +70,8 @@ export function useEditorGrid() {
 		}
 
 		const padding = 0.5; // рисуем чуть шире видимой области (0.5 = половина)
-		const paddingX = s.editor.width * padding;
-		const paddingY = s.editor.height * padding;
+		const paddingX = s.scene.width * padding;
+		const paddingY = s.scene.height * padding;
 		// Math.floor - нужна для целочисленного округления
 		const startX = Math.floor((s.camera.x - paddingX) / grid.baseLineGap) * grid.baseLineGap;
 		const endX = Math.ceil((s.camera.width + paddingX) / grid.baseLineGap) * grid.baseLineGap;

@@ -29,11 +29,11 @@
 </template>
 
 <script lang="ts" setup>
-import { useEditorStore } from '@/stores/EditorStore';
-import { useEditorGrid } from '../../../composables/useEditorGrid';
+import { useSceneStore } from '@/stores/SceneStore';
+import { useSceneGrid } from '../../../composables/useSceneGrid';
 
-const s = useEditorStore();
-const { grid, getLineThickness } = useEditorGrid();
+const s = useSceneStore();
+const { grid, getLineThickness } = useSceneGrid();
 </script>
 
 <style lang="scss">
