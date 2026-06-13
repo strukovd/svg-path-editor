@@ -23,57 +23,27 @@
 			:class="['reference-image', { active: image.id === activeId, locked: image.locked }]"
 			v-show="image.visible"
 		>
-			<image
-				:href="image.href"
-				:x="image.x"
-				:y="image.y"
-				:width="image.width"
-				:height="image.height"
+			<SceneEntityBox
+				:box="getImageBox(image)"
+				:active="image.id === activeId"
+				:locked="image.locked"
 				:opacity="image.opacity"
-				preserveAspectRatio="none"
-				@mousedown.stop.prevent="startMove(image, $event)"
-			/>
-
-			<g v-if="image.id === activeId" class="reference-image-controls">
-				<rect
-					class="reference-image-outline"
+				@select="activeId = image.id"
+				@change-box="box => setImageBox(image, box)"
+				@change-opacity="opacity => image.opacity = opacity"
+				@toggle-lock="image.locked = !image.locked"
+				@remove="removeImage(image.id)"
+			>
+				<image
+					:href="image.href"
 					:x="image.x"
 					:y="image.y"
 					:width="image.width"
 					:height="image.height"
-					vector-effect="non-scaling-stroke"
+					:opacity="image.opacity"
+					preserveAspectRatio="none"
 				/>
-
-				<circle
-					v-for="handle in resizeHandles"
-					:key="handle.name"
-					class="reference-image-handle"
-					:cx="handleX(image, handle.name)"
-					:cy="handleY(image, handle.name)"
-					:r="5 * s.camera.scale"
-					vector-effect="non-scaling-stroke"
-					@mousedown.stop.prevent="startResize(image, handle.name, $event)"
-				/>
-
-				<g class="reference-image-toolbar">
-					<g @mousedown.stop.prevent @click.stop.prevent="changeOpacity(image, -0.1)">
-						<rect :x="toolbarX(image)" :y="toolbarY(image)" :width="controlSize" :height="controlSize" :rx="controlRadius"/>
-						<text :x="toolbarX(image) + controlSize / 2" :y="toolbarY(image) + controlSize / 2" :font-size="14 * s.camera.scale" text-anchor="middle" dominant-baseline="central">-</text>
-					</g>
-					<g @mousedown.stop.prevent @click.stop.prevent="changeOpacity(image, 0.1)">
-						<rect :x="toolbarX(image) + controlStep" :y="toolbarY(image)" :width="controlSize" :height="controlSize" :rx="controlRadius"/>
-						<text :x="toolbarX(image) + controlStep + controlSize / 2" :y="toolbarY(image) + controlSize / 2" :font-size="14 * s.camera.scale" text-anchor="middle" dominant-baseline="central">+</text>
-					</g>
-					<g @mousedown.stop.prevent @click.stop.prevent="toggleLocked(image)">
-						<rect :x="toolbarX(image) + controlStep * 2" :y="toolbarY(image)" :width="controlSize" :height="controlSize" :rx="controlRadius"/>
-						<text :x="toolbarX(image) + controlStep * 2 + controlSize / 2" :y="toolbarY(image) + controlSize / 2" :font-size="12 * s.camera.scale" text-anchor="middle" dominant-baseline="central">{{ image.locked ? 'L' : 'U' }}</text>
-					</g>
-					<g @mousedown.stop.prevent @click.stop.prevent="removeImage(image.id)">
-						<rect :x="toolbarX(image) + controlStep * 3" :y="toolbarY(image)" :width="controlSize" :height="controlSize" :rx="controlRadius"/>
-						<text :x="toolbarX(image) + controlStep * 3 + controlSize / 2" :y="toolbarY(image) + controlSize / 2" :font-size="13 * s.camera.scale" text-anchor="middle" dominant-baseline="central">x</text>
-					</g>
-				</g>
-			</g>
+			</SceneEntityBox>
 		</g>
 	</g>
 </template>
@@ -81,8 +51,8 @@
 <script lang="ts" setup>
 import { computed, onMounted, onUnmounted, ref } from 'vue';
 import { useSceneStore } from '@/stores/SceneStore';
-
-type ResizeHandle = 'nw' | 'ne' | 'sw' | 'se';
+import type { SceneBox } from '@/types/scene-entity';
+import SceneEntityBox from './SceneEntityBox.vue';
 
 interface ReferenceImage {
 	id: string;
@@ -97,32 +67,11 @@ interface ReferenceImage {
 	visible: boolean;
 }
 
-interface DragState {
-	mode: 'move' | 'resize';
-	imageId: string;
-	handle?: ResizeHandle;
-	startX: number;
-	startY: number;
-	originalX: number;
-	originalY: number;
-	originalWidth: number;
-	originalHeight: number;
-	svgElement: SVGSVGElement;
-}
-
 const s = useSceneStore();
 const images = ref<ReferenceImage[]>([]);
 const activeId = ref<string | null>(null);
-const dragState = ref<DragState | null>(null);
-const resizeHandles: Array<{ name: ResizeHandle }> = [
-	{ name: 'nw' },
-	{ name: 'ne' },
-	{ name: 'sw' },
-	{ name: 'se' },
-];
 
 const controlSize = computed(() => 26 * s.camera.scale);
-const controlStep = computed(() => 30 * s.camera.scale);
 const controlRadius = computed(() => 4 * s.camera.scale);
 const panelX = computed(() => s.camera.x + 12 * s.camera.scale);
 const panelY = computed(() => s.camera.y + 12 * s.camera.scale);
@@ -139,10 +88,6 @@ function getSceneSvg(target: EventTarget | null): SVGSVGElement | null {
 		return target.ownerSVGElement;
 	}
 	return document.getElementById('scene') as SVGSVGElement | null;
-}
-
-function clamp(value: number, min: number, max: number) {
-	return Math.min(max, Math.max(min, value));
 }
 
 function openFileDialog() {
@@ -201,128 +146,20 @@ function readImageSize(src: string): Promise<{ width: number; height: number }> 
 	});
 }
 
-function startMove(image: ReferenceImage, e: MouseEvent) {
-	activeId.value = image.id;
-	if (image.locked) return;
-
-	const svgElement = getSceneSvg(e.currentTarget);
-	if (!svgElement) return;
-
-	const start = s.clientToWorld(e.clientX, e.clientY, svgElement);
-	dragState.value = {
-		mode: 'move',
-		imageId: image.id,
-		startX: start.x,
-		startY: start.y,
-		originalX: image.x,
-		originalY: image.y,
-		originalWidth: image.width,
-		originalHeight: image.height,
-		svgElement,
+function getImageBox(image: ReferenceImage): SceneBox {
+	return {
+		x: image.x,
+		y: image.y,
+		width: image.width,
+		height: image.height,
 	};
-
-	document.addEventListener('mousemove', drag);
-	document.addEventListener('mouseup', stopDrag);
 }
 
-function startResize(image: ReferenceImage, handle: ResizeHandle, e: MouseEvent) {
-	activeId.value = image.id;
-	if (image.locked) return;
-
-	const svgElement = getSceneSvg(e.currentTarget);
-	if (!svgElement) return;
-
-	const start = s.clientToWorld(e.clientX, e.clientY, svgElement);
-	dragState.value = {
-		mode: 'resize',
-		imageId: image.id,
-		handle,
-		startX: start.x,
-		startY: start.y,
-		originalX: image.x,
-		originalY: image.y,
-		originalWidth: image.width,
-		originalHeight: image.height,
-		svgElement,
-	};
-
-	document.addEventListener('mousemove', drag);
-	document.addEventListener('mouseup', stopDrag);
-}
-
-function drag(e: MouseEvent) {
-	const state = dragState.value;
-	if (!state) return;
-
-	const image = images.value.find(it => it.id === state.imageId);
-	if (!image) return;
-
-	const current = s.clientToWorld(e.clientX, e.clientY, state.svgElement);
-	const dx = current.x - state.startX;
-	const dy = current.y - state.startY;
-
-	if (state.mode === 'move') {
-		image.x = state.originalX + dx;
-		image.y = state.originalY + dy;
-		return;
-	}
-
-	resizeImage(image, state, dx, dy);
-}
-
-function resizeImage(image: ReferenceImage, state: DragState, dx: number, dy: number) {
-	const minSize = 20 * s.camera.scale;
-	let x = state.originalX;
-	let y = state.originalY;
-	let width = state.originalWidth;
-	let height = state.originalHeight;
-
-	if (state.handle === 'nw' || state.handle === 'sw') {
-		x = state.originalX + dx;
-		width = state.originalWidth - dx;
-	}
-	if (state.handle === 'ne' || state.handle === 'se') {
-		width = state.originalWidth + dx;
-	}
-	if (state.handle === 'nw' || state.handle === 'ne') {
-		y = state.originalY + dy;
-		height = state.originalHeight - dy;
-	}
-	if (state.handle === 'sw' || state.handle === 'se') {
-		height = state.originalHeight + dy;
-	}
-
-	if (width < minSize) {
-		if (state.handle === 'nw' || state.handle === 'sw') {
-			x = state.originalX + state.originalWidth - minSize;
-		}
-		width = minSize;
-	}
-	if (height < minSize) {
-		if (state.handle === 'nw' || state.handle === 'ne') {
-			y = state.originalY + state.originalHeight - minSize;
-		}
-		height = minSize;
-	}
-
-	image.x = x;
-	image.y = y;
-	image.width = width;
-	image.height = height;
-}
-
-function stopDrag() {
-	dragState.value = null;
-	document.removeEventListener('mousemove', drag);
-	document.removeEventListener('mouseup', stopDrag);
-}
-
-function changeOpacity(image: ReferenceImage, delta: number) {
-	image.opacity = Number(clamp(image.opacity + delta, 0.1, 1).toFixed(2));
-}
-
-function toggleLocked(image: ReferenceImage) {
-	image.locked = !image.locked;
+function setImageBox(image: ReferenceImage, box: SceneBox) {
+	image.x = box.x;
+	image.y = box.y;
+	image.width = box.width;
+	image.height = box.height;
 }
 
 function removeImage(id: string) {
@@ -334,22 +171,6 @@ function removeImage(id: string) {
 	if (activeId.value === id) {
 		activeId.value = null;
 	}
-}
-
-function handleX(image: ReferenceImage, handle: ResizeHandle) {
-	return handle === 'nw' || handle === 'sw' ? image.x : image.x + image.width;
-}
-
-function handleY(image: ReferenceImage, handle: ResizeHandle) {
-	return handle === 'nw' || handle === 'ne' ? image.y : image.y + image.height;
-}
-
-function toolbarX(image: ReferenceImage) {
-	return image.x;
-}
-
-function toolbarY(image: ReferenceImage) {
-	return image.y - controlStep.value;
 }
 
 function onDragOver(e: DragEvent) {
@@ -380,7 +201,6 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
-	stopDrag();
 	document.removeEventListener('dragover', onDragOver);
 	document.removeEventListener('drop', onDrop);
 	document.removeEventListener('paste', onPaste);
@@ -392,16 +212,14 @@ onUnmounted(() => {
 
 <style lang="scss">
 .reference-images {
-	.reference-image-add rect,
-	.reference-image-toolbar rect {
+	.reference-image-add rect {
 		fill: #202124;
 		stroke: #4b4d50;
 		stroke-width: 1;
 		vector-effect: non-scaling-stroke;
 	}
 
-	.reference-image-add text,
-	.reference-image-toolbar text {
+	.reference-image-add text {
 		fill: #f4f4f5;
 		pointer-events: none;
 		user-select: none;
@@ -413,21 +231,6 @@ onUnmounted(() => {
 
 	.reference-image.locked image {
 		cursor: default;
-	}
-
-	.reference-image-outline {
-		fill: transparent;
-		stroke: #00c2ff;
-		stroke-dasharray: 6 4;
-		stroke-width: 1;
-		pointer-events: none;
-	}
-
-	.reference-image-handle {
-		fill: #00c2ff;
-		stroke: #101113;
-		stroke-width: 1;
-		cursor: nwse-resize;
 	}
 }
 </style>
