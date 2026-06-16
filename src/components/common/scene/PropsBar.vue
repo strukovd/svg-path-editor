@@ -1,54 +1,92 @@
 <template>
-	<section id="wr-props-bar">
-		<div id="props-bar">
-			<section id="path-string">
-				<textarea id="" cols="30" rows="10"></textarea>
-			</section>
-			<section>
-				<div v-for="(element, index) of useSceneStore().elements" :key="element.id" style="margin: 0 .6em;">
-					<div style=" display: inline-block; font-size: 0.7em; background: darkviolet; color: whitesmoke; line-height: 1.6em; padding: 0 0.6em; border-radius: 4px; margin-right: .8em;">{{ element.type }}</div>
-					<div style=" display: inline-block; font-size: .7em; color: #777;">#{{ element.id }}</div>
-				</div>
+	<aside id="props-bar">
+		<BaseIsland title="Elements" id="elements">
+			<div v-for="element of s.elements" :key="element.id" class="element">
+				<span class="props-badge props-badge--path">{{ element.type }}</span>
+				<span class="props-id">#{{ element.id }}</span>
+			</div>
 
-				<div style="margin: 0 .6em;">
-					<div style=" display: inline-block; font-size: 0.7em; background: darkviolet; color: whitesmoke; line-height: 1.6em; padding: 0 0.6em; border-radius: 4px; margin-right: .8em;">path</div>
-					<div style=" display: inline-block; font-size: .7em; color: #777;">#star</div>
-				</div>
-				<div style="margin: 0 .6em;">
-					<div style=" display: inline-block; font-size: 0.7em; background: #177fd1; color: whitesmoke; line-height: 1.6em; padding: 0 0.6em; border-radius: 4px; margin-right: .8em;">group</div>
-					<div style=" display: inline-block; font-size: .7em; color: #777;">#car</div>
-				</div>
-			</section>
-			<footer>
-				<div>
-					<span>Масштаб: {{scale}}%</span>
-				</div>
-			</footer>
-		</div>
-	</section>
+			<div class="element">
+				<span class="props-badge props-badge--path">path</span>
+				<span class="props-id">#star</span>
+			</div>
+			<div class="element">
+				<span class="props-badge props-badge--group">group</span>
+				<span class="props-id">#car</span>
+			</div>
+		</BaseIsland>
+
+		<BaseIsland title="Path" id="path-string">
+			<textarea rows="10"></textarea>
+		</BaseIsland>
+
+		<BaseIsland title="Properties" id="properties" default-collapsed>
+			ss
+		</BaseIsland>
+
+		<span class="props-scale">Масштаб: {{scale}}%</span>
+	</aside>
 </template>
 
 <script setup lang="ts">
 import { useSceneStore } from '@/stores/SceneStore';
 import { computed } from 'vue';
+import BaseIsland from '../base/BaseIsland.vue';
 const s = useSceneStore();
 const scale = computed(() => Math.round((1 / s.camera.scale) * 100));
 </script>
 
 <style lang="scss">
-#wr-props-bar {
-	// background-color: var(--scene-color);
-	// padding:1em;
+#props-bar {
+	width: 18rem;
+	box-sizing: border-box;
+	border-left: 1px solid color-mix(in srgb, var(--sidebar-color) 76%, white 4%);
+	background: var(--sidebar-color);
+	color: #e8e8ea;
 
-	border-radius:8px;
-	background-color: var(--sidebar-color);
-	padding:.5em;
-	#props-bar {
-		border-radius:8px;
-		background-color: var(--sidebar-color);
-		padding:.5em;
-		// border-left: 1px solid color-mix(in srgb, var(--sidebar-color) 95%, whitesmoke 5%);
-		color: whitesmoke;
+	.element {
+		display: flex;
+		align-items: center;
+		gap: .55rem;
+		min-height: 1.55rem;
+		padding: .15rem 0;
 	}
+}
+
+
+.props-badge {
+	display: inline-flex;
+	align-items: center;
+	height: 1.25rem;
+	padding: 0 .45rem;
+	border-radius: 4px;
+	color: #f4f4f5;
+	font-size: .7rem;
+	font-weight: 600;
+	line-height: 1;
+}
+
+.props-badge--path {
+	background: #6d3fc8;
+}
+
+.props-badge--group {
+	background: #177fd1;
+}
+
+.props-id {
+	min-width: 0;
+	overflow: hidden;
+	color: #9b9da3;
+	font-size: .72rem;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.props-scale {
+	display: block;
+	padding: .2rem .1rem 0;
+	color: #9b9da3;
+	font-size: .75rem;
 }
 </style>
