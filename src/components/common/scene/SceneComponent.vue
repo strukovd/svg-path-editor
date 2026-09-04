@@ -1,7 +1,7 @@
 <template>
 	<section id="scene-section">
 		<svg
-			:style="{visibility: s.ready?'visible':'hidden'}"
+			:style="{visibility: sceneStore.ready?'visible':'hidden'}"
 			id="scene"
 			ref="sceneElement"
 			:viewBox="viewBox"
@@ -14,7 +14,7 @@
 			</defs>
 			<SceneGrid/>
 			<SceneReferenceImage/>
-	
+
 			<g name="debug" fill="whitesmoke">
 				<text x="0" y="150">{{ viewBox }}</text>
 				<text x="0" y="300">{{ visibleBounds }}</text>
@@ -31,18 +31,14 @@
 -->
 
 <script lang="ts" setup>
-import { computed, defineComponent, onMounted, onUnmounted, ref, useTemplateRef } from 'vue';
-import { useSceneStore } from '@/stores/SceneStore.ts';
-import { AnchorPoint, ControlPoint } from '@/lib/svg';
-import { useSceneGrid } from '../../../composables/useSceneGrid.ts';
-import { useSceneZoom } from '@/composables/useSceneZoom.ts';
-import { useSceneMover } from '@/composables/useSceneMover.ts';
+import { computed, onMounted, useTemplateRef } from 'vue';
+import { useSceneStore } from '@/stores/SceneStore';
+import { useSceneZoom } from '@/composables/useSceneZoom';
+import { useSceneMover } from '@/composables/useSceneMover';
 import SceneGrid from './SceneGrid.vue';
 import SceneReferenceImage from './SceneReferenceImage.vue';
-const s = useSceneStore();
-const sceneGrid = useSceneGrid();
+const sceneStore = useSceneStore();
 
-const grid = sceneGrid.grid;
 const onWheel = useSceneZoom().onWheel;
 const activate = useSceneMover().activate;
 
@@ -51,13 +47,6 @@ const activate = useSceneMover().activate;
 
 const pSceneElement = useTemplateRef<SVGSVGElement>('sceneElement');
 let resizeObs: ResizeObserver | null = null;
-const moveDeltaX = ref(0);
-const moveDeltaY = ref(0);
-// const moveRafId = ref<number | null>(null);
-const draggedPoint = ref<AnchorPoint | ControlPoint | null>(null);
-const dragMoveHandler = ref<((e: MouseEvent) => void) | null>(null);
-const dragUpHandler = ref<((e: MouseEvent) => void) | null>(null);
-
 
 function init() {
 	if( !pSceneElement.value ) {
@@ -67,22 +56,31 @@ function init() {
 
 	const BASE_SCALE = 1; // this.camera.width / this.editorWidth
 	// Инициализируем размер вьюпорта равным размеру svg, что бы не было проблем со скроллингом
-	s.camera.scale = BASE_SCALE;
-	s.camera.height = s.scene.height = Math.trunc(pSceneElement.value.height.baseVal.value); // высота
-	s.camera.width = s.scene.width = Math.trunc(pSceneElement.value.width.baseVal.value); // ширина
+	sceneStore.camera.scale = BASE_SCALE;
+	sceneStore.camera.height = sceneStore.scene.height = Math.trunc(pSceneElement.value.height.baseVal.value); // высота
+	sceneStore.camera.width = sceneStore.scene.width = Math.trunc(pSceneElement.value.width.baseVal.value); // ширина
 
 	initResizeObs();
-	s.ready = true;
+	sceneStore.ready = true;
 }
 function initResizeObs() {
 	// Создаем наблюдатель за изменениями размера svg элемента
 	resizeObs = new ResizeObserver((entries) => {
 		for (const entry of entries) {
-			s.camera.height = Number( entry.contentRect.height.toFixed(2) );
-			s.camera.width = Number( entry.contentRect.width.toFixed(2) );
+			const newHeight = Math.round(entry.contentRect.height);
+			const newWidth = Math.round(entry.contentRect.width);
+
+			// Пишем в стор только при реальном изменении (защита от лишних апдейтов Vue)
+			if (sceneStore.camera.height !== newHeight) {
+				sceneStore.camera.height = newHeight;
+			}
+			if (sceneStore.camera.width !== newWidth) {
+				sceneStore.camera.width = newWidth;
+			}
 		}
 	});
-	resizeObs.observe(pSceneElement.value!);
+	// Отслеживаем сам корневой элемент секции, а не SVG
+	resizeObs.observe(pSceneElement.value!.parentElement || pSceneElement.value!);
 }
 
 onMounted(() => {
@@ -99,7 +97,7 @@ onMounted(() => {
 
 
 const viewBox = computed(() => {
-	return `${s.camera.x} ${s.camera.y} ${s.camera.width} ${s.camera.height}`;
+	return `${sceneStore.camera.x} ${sceneStore.camera.y} ${sceneStore.camera.width} ${sceneStore.camera.height}`;
 });
 
 
@@ -115,10 +113,10 @@ const visiblePoints = computed(() => {
 	return [];
 });
 const visibleBounds = computed(() => {
-	const left = s.camera.x;
-	const top = s.camera.y;
-	const right = left + s.camera.width;
-	const bottom = top + s.camera.height;
+	const left = sceneStore.camera.x;
+	const top = sceneStore.camera.y;
+	const right = left + sceneStore.camera.width;
+	const bottom = top + sceneStore.camera.height;
 	return { left, top, right, bottom };
 });
 
@@ -132,15 +130,15 @@ const visibleBounds = computed(() => {
 // }
 // function dragPoint(e: MouseEvent) {
 // 	if (!draggedPoint) return;
-// 	const pos = s.clientToWorld(e.clientX, e.clientY, e.currentTarget as SVGSVGElement);
-// 	s.updateActivePath(path => {
+// 	const pos = sceneStore.clientToWorld(e.clientX, e.clientY, e.currentTarget as SVGSVGElement);
+// 	sceneStore.updateActivePath(path => {
 // 		path.setLocation(draggedPoint as any, pos);
 // 	}, false);
 // }
 // function stopDragPoint() {
 // 	if (draggedPoint) {
 // 		// финализируем шаг в историю
-// 		s.pushHistory();
+// 		sceneStore.pushHistory();
 // 	}
 // 	draggedPoint = null;
 // 	if (dragMoveHandler) {
@@ -161,11 +159,27 @@ const visibleBounds = computed(() => {
 
 <style lang="scss">
 #scene-section {
+	/* 1. Полная автономия: компонент занимает 100% родителя, но не коксеет его */
+	width: 100%;
+	height: 100%;
+	/* 2. Защитный барьер: запрещаем компоненту диктовать свои размеры родителю */
+	min-width: 0;
+	min-height: 0;
+	overflow: hidden;
+	/* 3. Гарантируем, что SVG внутри будет позиционироваться относительно этой секции */
+	position: relative;
+
 	#scene {
 		user-select: none;
-		width:100%;
+		/* 4. Абсолютное позиционирование SVG отвязывает его физический размер от потока документа.
+		Теперь SVG физически НЕ МОЖЕТ растянуть родительский блок, он просто заполняет #scene-section */
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		display: block;
 		background-color: var(--scene-color);
-		height:100vh;
 	}
 }
 </style>
