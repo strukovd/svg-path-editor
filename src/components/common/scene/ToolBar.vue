@@ -1,5 +1,8 @@
 <template>
 	<section id="tool-bar">
+		<button type="button" class="tool" title="Path">
+			<img src="/path2.svg" alt="Path">
+		</button>
 		<button type="button" class="tool" title="Circle">
 			<img src="/circle.svg" alt="Circle">
 		</button>
@@ -11,9 +14,6 @@
 		</button>
 		<button type="button" class="tool" title="Image">
 			<img src="/image.svg" alt="Image">
-		</button>
-		<button type="button" class="tool" title="Path">
-			<img src="/path.svg" alt="Path">
 		</button>
 		<!-- <div title="moveto (move from one point to another point)">M</div>
 		<div title="lineto (create a line)">L</div>
@@ -72,7 +72,6 @@
 			width: 100%;
 			height: 100%;
 			object-fit: contain;
-			filter: invert(1) opacity(.86);
 			pointer-events: none;
 		}
 	}
