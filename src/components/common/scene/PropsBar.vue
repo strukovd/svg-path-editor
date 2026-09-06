@@ -1,6 +1,6 @@
 <template>
 	<aside id="props-bar">
-		<BaseIsland v-for="panel of editorStore.panels.items" :key="panel.key" :title="panel.title">
+		<BaseIsland v-for="panel of appStore.panels.items" :key="panel.key" :title="panel.title">
 			<component :is="loadPanelComponent(panel.key)"/>
 		</BaseIsland>
 
@@ -12,10 +12,10 @@
 import { useSceneStore } from '@/stores/SceneStore';
 import { computed } from 'vue';
 import BaseIsland from '../base/BaseIsland.vue';
-import { useEditorStore } from '@/stores/EditorStore.ts';
+import { useAppStore } from '@/stores/AppStore.ts';
 import { loadPanelComponent } from '@/utils/asyncLoaders';
 const sceneStore = useSceneStore();
-const editorStore = useEditorStore();
+const appStore = useAppStore();
 const scale = computed(() => Math.round((1 / sceneStore.camera.scale) * 100));
 </script>
 

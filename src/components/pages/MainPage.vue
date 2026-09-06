@@ -2,7 +2,6 @@
 	<section id="main-page">
 		<header>test</header>
 		<main class="main-screen">
-			<RouterView/>
 			<ToolBar/>
 			<div id="workspace">
 				<SceneComponent/>
