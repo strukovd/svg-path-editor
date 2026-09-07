@@ -1,18 +1,30 @@
 import { defineAsyncComponent, type Component } from 'vue';
 
+
+// Статические глобы (Vite подставляет их при сборке)
 const panelModules = import.meta.glob<{ default: Component }>('../components/common/scene/panels/*.vue');
-const panelComponentCache = new Map<string, Component>();
+const footerModules = import.meta.glob<{ default: Component }>('../components/common/scene/footers/*.vue');
 
-export function loadPanelComponent(key: string) {
-	const cached = panelComponentCache.get(key);
-	if (cached) return cached;
+// Универсальная фабрика загрузчиков
+function createComponentLoader(
+	modules: Record<string, () => Promise<{ default: Component }>>,
+	basePath: string
+) {
+	const cache = new Map<string, Component>();
 
-	const file = `../components/common/scene/panels/${key}.vue`;
-	const loader = panelModules[file];
+	return (filename: string) => {
+		const cached = cache.get(filename);
+		if (cached) return cached;
 
-	if (!loader) return null;
+		const file = `${basePath}/${filename}.vue`;
+		const loader = modules[file];
+		if (!loader) return null;
 
-	const component = defineAsyncComponent(loader);
-	panelComponentCache.set(key, component);
-	return component;
+		const component = defineAsyncComponent(loader);
+		cache.set(filename, component);
+		return component;
+	};
 }
+
+export const loadPanelComponent = createComponentLoader(panelModules, '../components/common/scene/panels');
+export const loadFooterComponent = createComponentLoader(footerModules, '../components/common/scene/footers');
