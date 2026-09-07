@@ -1,5 +1,5 @@
 import { createPinia } from 'pinia';
-export * from './EditorStore';
+export * from './AppStore';
 export * from './UserStore';
 export * from './SceneStore';
 

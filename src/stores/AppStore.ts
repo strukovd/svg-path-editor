@@ -2,20 +2,33 @@ import { List } from '@/utils/colletions';
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 
-export interface EditorPanel {
+export type LayoutItem = {
 	key: string;
-	title: string;
-}
+	icon?: string;
+	title?: string;
+	isCollapsed?: boolean;
+	action?: () => void;
+};
+export type SidePanel = LayoutItem;
+export type FooterPanel = LayoutItem;
 
 export const useAppStore = defineStore('app', () => {
 	const loading = ref(true);
 	const menu = List([]); // видимые пункты меню
-	const panels = List<EditorPanel>([ // видимые панели справа
+	const panels = List<SidePanel>([ // видимые панели справа
 		{ key: 'Elements', title: 'Elements' },
 		{ key: 'Properties', title: 'Properties' },
 		{ key: 'Path', title: 'Path' },
 	]);
-	const footer = List([`STATUS`, `COORDS`, `ZOOM`]); // видимые панели снизу
+	const footer = List<FooterPanel>([ // видимые панели снизу
+		{ key: 'Mode' }, // Design / Animation
+		{ key: 'Status' }, // активный инструмент ??
+		{ key: 'Coords' }, // координаты курсора на холсте
+		{ key: 'Zoom' }, // масштаб сцены
+		{ key: 'Grid' }, // сетка
+		{ key: 'SelectionInfo' }, // инфа о выделенном
+		{ key: 'SyncStatus' }, // инфа о синхронизации
+	]);
 
 	return {
 		loading,
