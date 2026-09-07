@@ -7,6 +7,7 @@
 			:viewBox="viewBox"
 			@mousedown="activate"
 			@wheel.prevent="onWheel"
+			@mousemove="sceneStore.updateCursor($event.clientX, $event.clientY, pSceneElement)"
 			@resize="()=>{ console.log(`resize`); }"
 		>
 			<defs>
@@ -33,8 +34,8 @@
 <script lang="ts" setup>
 import { computed, onMounted, useTemplateRef } from 'vue';
 import { useSceneStore } from '@/stores/SceneStore';
-import { useSceneZoom } from '@/composables/useSceneZoom';
-import { useSceneMover } from '@/composables/useSceneMover';
+import { useSceneZoom } from '@/composables/scene/useSceneZoom.ts';
+import { useSceneMover } from '@/composables/scene/useSceneMover.ts';
 import SceneGrid from './SceneGrid.vue';
 import SceneReferenceImage from './SceneReferenceImage.vue';
 const sceneStore = useSceneStore();
