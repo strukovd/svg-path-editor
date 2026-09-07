@@ -38,16 +38,14 @@ import { useSceneZoom } from '@/composables/scene/useSceneZoom.ts';
 import { useSceneMover } from '@/composables/scene/useSceneMover.ts';
 import SceneGrid from './SceneGrid.vue';
 import SceneReferenceImage from './SceneReferenceImage.vue';
+import { useSceneCalibrator } from '@/composables/scene/useSceneCalibrator.ts';
 const sceneStore = useSceneStore();
 
+const pSceneElement = useTemplateRef<SVGSVGElement>('sceneElement');
 const onWheel = useSceneZoom().onWheel;
 const activate = useSceneMover().activate;
 
-
-
-
-const pSceneElement = useTemplateRef<SVGSVGElement>('sceneElement');
-let resizeObs: ResizeObserver | null = null;
+useSceneCalibrator(pSceneElement);
 
 function init() {
 	if( !pSceneElement.value ) {
@@ -55,52 +53,21 @@ function init() {
 		return;
 	}
 
-	const BASE_SCALE = 1; // this.camera.width / this.editorWidth
-	// Инициализируем размер вьюпорта равным размеру svg, что бы не было проблем со скроллингом
-	sceneStore.camera.scale = BASE_SCALE;
-	sceneStore.camera.height = sceneStore.scene.height = Math.trunc(pSceneElement.value.height.baseVal.value); // высота
-	sceneStore.camera.width = sceneStore.scene.width = Math.trunc(pSceneElement.value.width.baseVal.value); // ширина
-
-	initResizeObs();
+	// const BASE_SCALE = 1;
+	// sceneStore.camera.scale = BASE_SCALE;
+	// Инициализируем размер сцены = размеру svg
+	sceneStore.camera.height = sceneStore.scene.height = Math.trunc(pSceneElement.value.height.baseVal.value);
+	sceneStore.camera.width = sceneStore.scene.width = Math.trunc(pSceneElement.value.width.baseVal.value);
 	sceneStore.ready = true;
-}
-function initResizeObs() {
-	// Создаем наблюдатель за изменениями размера svg элемента
-	resizeObs = new ResizeObserver((entries) => {
-		for (const entry of entries) {
-			const newHeight = Math.round(entry.contentRect.height);
-			const newWidth = Math.round(entry.contentRect.width);
-
-			// Пишем в стор только при реальном изменении (защита от лишних апдейтов Vue)
-			if (sceneStore.camera.height !== newHeight) {
-				sceneStore.camera.height = newHeight;
-			}
-			if (sceneStore.camera.width !== newWidth) {
-				sceneStore.camera.width = newWidth;
-			}
-		}
-	});
-	// Отслеживаем сам корневой элемент секции, а не SVG
-	resizeObs.observe(pSceneElement.value!.parentElement || pSceneElement.value!);
 }
 
 onMounted(() => {
 	init();
 });
 
-// onUnmounted(() => {
-// 	resizeObserver.unobserve(pSceneElement.value);
-// 	if (moveRafId !== null) {
-// 		cancelAnimationFrame(moveRafId);
-// 	}
-// });
-
-
-
 const viewBox = computed(() => {
 	return `${sceneStore.camera.x} ${sceneStore.camera.y} ${sceneStore.camera.width} ${sceneStore.camera.height}`;
 });
-
 
 
 const visiblePoints = computed(() => {
@@ -121,41 +88,6 @@ const visibleBounds = computed(() => {
 	return { left, top, right, bottom };
 });
 
-
-// function startDragPoint(pt: AnchorPoint | ControlPoint, e: MouseEvent) {
-// 	const draggedPoint = pt;
-// 	const dragMoveHandler = (evt: MouseEvent) => dragPoint(evt);
-// 	const dragUpHandler = () => stopDragPoint();
-// 	document.addEventListener('mousemove', dragMoveHandler);
-// 	document.addEventListener('mouseup', dragUpHandler);
-// }
-// function dragPoint(e: MouseEvent) {
-// 	if (!draggedPoint) return;
-// 	const pos = sceneStore.clientToWorld(e.clientX, e.clientY, e.currentTarget as SVGSVGElement);
-// 	sceneStore.updateActivePath(path => {
-// 		path.setLocation(draggedPoint as any, pos);
-// 	}, false);
-// }
-// function stopDragPoint() {
-// 	if (draggedPoint) {
-// 		// финализируем шаг в историю
-// 		sceneStore.pushHistory();
-// 	}
-// 	draggedPoint = null;
-// 	if (dragMoveHandler) {
-// 		document.removeEventListener('mousemove', this.dragMoveHandler);
-// 		dragMoveHandler = null;
-// 	}
-// 	if (dragUpHandler) {
-// 		document.removeEventListener('mouseup', this.dragUpHandler);
-// 		dragUpHandler = null;
-// 	}
-// }
-
-// MOVING
-// RESIZING
-// ROTATING
-// SCALING
 </script>
 
 <style lang="scss">
