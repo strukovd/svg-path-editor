@@ -30,7 +30,7 @@
 
 <script lang="ts" setup>
 import { useSceneStore } from '@/stores/SceneStore';
-import { useSceneGrid } from '../../../composables/useSceneGrid';
+import { useSceneGrid } from '../../../composables/scene/useSceneGrid';
 
 const s = useSceneStore();
 const { grid, getLineThickness } = useSceneGrid();

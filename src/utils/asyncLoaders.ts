@@ -2,8 +2,8 @@ import { defineAsyncComponent, type Component } from 'vue';
 
 
 // Статические глобы (Vite подставляет их при сборке)
-const panelModules = import.meta.glob<{ default: Component }>('../components/common/scene/panels/*.vue');
-const footerModules = import.meta.glob<{ default: Component }>('../components/common/scene/footers/*.vue');
+const panelModules = import.meta.glob<{ default: Component }>('../components/widgets/panels/*.vue');
+const footerModules = import.meta.glob<{ default: Component }>('../components/widgets/footers/*.vue');
 
 // Универсальная фабрика загрузчиков
 function createComponentLoader(
@@ -26,5 +26,5 @@ function createComponentLoader(
 	};
 }
 
-export const loadPanelComponent = createComponentLoader(panelModules, '../components/common/scene/panels');
-export const loadFooterComponent = createComponentLoader(footerModules, '../components/common/scene/footers');
+export const loadPanelComponent = createComponentLoader(panelModules, '../components/widgets/panels');
+export const loadFooterComponent = createComponentLoader(footerModules, '../components/widgets/footers');
