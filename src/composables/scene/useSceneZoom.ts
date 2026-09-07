@@ -47,6 +47,16 @@ export function useSceneZoom() {
 		s.camera.scale = s.camera.width / s.scene.width;
 	}
 
+	function resetZoom() {
+		if (!s.scene.width || !s.scene.height) return;
+		
+		s.camera.scale = 1;
+		s.camera.width = s.scene.width;
+		s.camera.height = s.scene.height;
+		s.camera.x = 0;
+		s.camera.y = 0;
+	}
+
 	return {
 		onWheel,
 	};
