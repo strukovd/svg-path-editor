@@ -1,8 +1,8 @@
 <template>
 	<section id="main-page">
-		<!-- <header>
-			TODO: Добавить menu
-		</header> -->
+		<header>
+			<!-- TODO: Добавить menu -->
+		</header>
 		<main class="main-screen">
 			<ToolBar/>
 			<div id="workspace">
