@@ -14,7 +14,7 @@ export type FooterPanel = LayoutItem;
 
 export const useAppStore = defineStore('app', () => {
 	const loading = ref(true);
-	const menu = List([]); // видимые пункты меню
+	const menu = List([]);
 	const panels = List<SidePanel>([ // видимые панели справа
 		{ key: 'Elements', title: 'Elements' },
 		{ key: 'Properties', title: 'Properties' },
@@ -22,6 +22,7 @@ export const useAppStore = defineStore('app', () => {
 	]);
 	const footer = List<FooterPanel>([ // видимые панели снизу
 		{ key: 'Mode' }, // Design / Animation
+		{ key: 'Direction' }, // ограничение направления перемещения
 		{ key: 'Status' }, // активный инструмент ??
 		{ key: 'Coords' }, // координаты курсора на холсте
 		{ key: 'Zoom' }, // масштаб сцены
