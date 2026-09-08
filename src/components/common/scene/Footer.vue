@@ -2,13 +2,15 @@
 	<footer id="footer-bar">
 		<div v-for="item of footerItems" :key="item.key"
 			:class="[
-				'footer-bar-item',
+				'indicator',
 				`item-${item.key.toLowerCase()}`,
-				{ 'is-clickable': !!item.action }
+				{ 'clickable': item.clickable }
 			]"
-			@click="item.action?.()"
+			@click="item.clickable"
 		>
-			<component :is="loadFooterComponent(item.key)"/>
+			<div v-if="item.key === 'spacer'" class="spacer"></div>
+			<div v-else-if="item.key === 'separator'" class="separator"></div>
+			<component v-else :is="loadFooterComponent(item.key)"/>
 		</div>
 	</footer>
 </template>
@@ -29,18 +31,27 @@ const footerItems = computed(() => appStore.footer.items);
 	user-select: none;
 	height: 28px; /* Типичная высота для статус-баров в редакторах */
 
-	.footer-bar-item {
+	.indicator {
 		display: inline-flex;
 		align-items: center;
 		height: 100%;
 		padding: 0 8px;
 		box-sizing: border-box;
 
-		&.item-mode {
+		&:first-child, &:last-child {
 			padding: 0;
 		}
+		&:has(.spacer) {
+			flex: 1 1 auto;
+		}
 
-		&.is-clickable {
+		.separator {
+			width: 1px;
+			height: 100%;
+			background-color: var(--color-bg-hover, rgba(255, 255, 255, 0.1));
+		}
+
+		&.clickable {
 			cursor: pointer;
 			transition: background-color 0.15s ease;
 

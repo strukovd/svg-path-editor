@@ -21,15 +21,16 @@ const sceneStore = useSceneStore();
 	font-family: monospace; /* Моноширинный шрифт предотвращает "тряску" текста при смене цифр */
 	font-size: 12px;
 	color: var(--footer-text-muted, #888888);
+
+	.coord-axis {
+		color: var(--color-accent, #569cd6); /* Подсветка осей, как в IDE */
+		font-weight: bold;
+	}
+
+	.coord-value {
+		color: var(--footer-text-light, #ffffff);
+		min-width: 40px; /* Фиксированная минимальная ширина, чтобы текст не прыгал */
+	}
 }
 
-.coord-axis {
-	color: var(--color-accent, #569cd6); /* Подсветка осей, как в IDE */
-	font-weight: bold;
-}
-
-.coord-value {
-	color: var(--footer-text-light, #ffffff);
-	min-width: 40px; /* Фиксированная минимальная ширина, чтобы текст не прыгал */
-}
 </style>
