@@ -27,8 +27,8 @@ export function useSceneZoom() {
 		const pointerX = s.camera.x + (e.clientX - rect.left) * (s.camera.width / rect.width);
 		const pointerY = s.camera.y + (e.clientY - rect.top) * (s.camera.height / rect.height);
 
-		const direction = Math.sign(e.deltaY) || 1; // 
-		const factor = Math.pow(1 + s.camera.stepScale, direction); // 
+		const direction = Math.sign(e.deltaY) || 1; //
+		const factor = Math.pow(1 + s.camera.stepScale, direction); //
 
 		const newWidth = Math.max(s.camera.minScale, s.camera.width * factor);
 		const newHeight = Math.max(s.camera.minScale, s.camera.height * factor);
@@ -49,7 +49,7 @@ export function useSceneZoom() {
 
 	function resetZoom() {
 		if (!s.scene.width || !s.scene.height) return;
-		
+
 		s.camera.scale = 1;
 		s.camera.width = s.scene.width;
 		s.camera.height = s.scene.height;
@@ -57,7 +57,26 @@ export function useSceneZoom() {
 		s.camera.y = 0;
 	}
 
+	function setZoom(percent: number) {
+		if (percent <= 0 || !s.camera.width || !s.camera.height) return;
+
+		const nextScale = 100 / percent;
+		const factor = nextScale / s.camera.scale;
+		const centerX = s.camera.x + s.camera.width / 2;
+		const centerY = s.camera.y + s.camera.height / 2;
+		const width = s.camera.width * factor;
+		const height = s.camera.height * factor;
+
+		s.camera.x = Number((centerX - width / 2).toFixed(4));
+		s.camera.y = Number((centerY - height / 2).toFixed(4));
+		s.camera.width = Number(width.toFixed(4));
+		s.camera.height = Number(height.toFixed(4));
+		s.camera.scale = nextScale;
+	}
+
 	return {
 		onWheel,
+		setZoom,
+		resetZoom,
 	};
 }
