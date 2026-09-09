@@ -1,0 +1,1 @@
+import{_ as t,c as o,o as a,a as s}from"./index-0nRLSvsh.js";const n={},r={id:"path-panel"};function c(_,e){return a(),o("section",r,e[0]||(e[0]=[s("textarea",{rows:"10"},null,-1)]))}const d=t(n,[["render",c]]);export{d as default};
