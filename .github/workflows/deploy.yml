@@ -1,0 +1,37 @@
+name: Deploy to GitHub Pages
+
+on: # Триггер
+  push:
+    branches:
+      - master
+    paths-ignore: ['docs/**']  # игнорируем папки
+
+  workflow_dispatch: # включает возможность запустить вручную
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    # defaults:
+    #   run:
+    #     working-directory: frontend  # работаем в папке frontend
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4 # Клонирует репозиторий
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4 # Устанавливает Node.js
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build project
+        run: npm run build
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4 # Размещает сборку в репозитории
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: dist # каталог сборки
