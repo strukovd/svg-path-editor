@@ -1,33 +1,80 @@
-import { Path } from '@/lib/svg';
+export type SceneMode =
+	'select' // выбор элементов
+	| 'transform'
+	| 'edit'
+	| 'draw';
+export type SceneTool = 'rect' | 'line' | 'circle' | 'ellipse' | 'image' | 'path';
+export type SceneElementType = SceneTool | 'polyline' | 'polygon' | 'text' | 'g';
 
-export type SceneElementType = 'path' | 'circle' | 'ellipse' | 'line' | 'polyline' | 'polygon' | 'rect' | 'text' | 'image' | 'g';
+export interface SceneElementAttrs {
+	fill?: string;
+	stroke?: string;
+	strokeWidth?: number;
+	opacity?: number;
+	visible?: boolean;
+	locked?: boolean;
+	[key: string]: unknown;
+}
 
-/**
- * Все svg состоят из базовых элементов, у которых есть id, type, name и атрибуты. У path элемента есть еще data, который содержит команды пути.
- */
 export interface BaseElement {
 	id: string;
 	type: SceneElementType;
 	name?: string;
-	attrs?: Record<string, unknown>;
+	attrs: SceneElementAttrs;
 }
 
-export interface PathElement extends BaseElement {
-	type: 'path';
-	data: Path;
+export interface RectElement extends BaseElement {
+	type: 'rect';
+	x: number;
+	y: number;
+	width: number;
+	height: number;
 }
 
-export type SceneElement = PathElement;
-
-export interface SerializedElement {
-	id: string;
-	type: SceneElementType;
-	name?: string;
-	attrs?: Record<string, unknown>;
-	data: Record<string, unknown>;
+export interface LineElement extends BaseElement {
+	type: 'line';
+	x1: number;
+	y1: number;
+	x2: number;
+	y2: number;
 }
+
+export interface CircleElement extends BaseElement {
+	type: 'circle';
+	cx: number;
+	cy: number;
+	r: number;
+}
+
+export interface EllipseElement extends BaseElement {
+	type: 'ellipse';
+	cx: number;
+	cy: number;
+	rx: number;
+	ry: number;
+}
+
+export interface ImageElement extends BaseElement {
+	type: 'image';
+	href: string;
+	x: number;
+	y: number;
+	width: number;
+	height: number;
+	preserveAspectRatio?: string;
+}
+
+export type SceneElement =
+	| RectElement
+	| LineElement
+	| CircleElement
+	| EllipseElement
+	| ImageElement;
 
 export interface SceneSnapshot {
-	elements: SerializedElement[];
-	activeId: string | null;
+	elements: SceneElement[];
+	selectedIds: string[];
+	editableId: string | null;
+	mode: SceneMode;
+	tool: SceneTool | null;
 }
