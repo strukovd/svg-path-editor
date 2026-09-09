@@ -21,14 +21,18 @@ export const useAppStore = defineStore('app', () => {
 		{ key: 'Path', title: 'Path' },
 	]);
 	const footer = List<FooterPanel>([ // видимые панели снизу
-		{ key: 'Mode' }, // Design / Animation
+		{ key: 'Zoom', clickable: true }, // масштаб сцены
 		{ key: 'Direction' }, // ограничение направления перемещения
-		{ key: 'Status' }, // активный инструмент ??
+		{ key: 'separator' },
 		{ key: 'Coords' }, // координаты курсора на холсте
-		{ key: 'Zoom' }, // масштаб сцены
-		{ key: 'Grid' }, // сетка
-		{ key: 'SelectionInfo' }, // инфа о выделенном
-		{ key: 'SyncStatus' }, // инфа о синхронизации
+		{ key: 'separator' },
+		// { key: 'Status' }, // активный инструмент ??
+		// { key: 'Grid' }, // сетка
+		// { key: 'SelectionInfo' }, // инфа о выделенном
+		// { key: 'SyncStatus' }, // инфа о синхронизации
+		// { key: 'Pan' }, // перемещение сцены
+		{ key: 'spacer' },
+		{ key: 'Context' }, // Default, Edit, New
 	]);
 
 	return {

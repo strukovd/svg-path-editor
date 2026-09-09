@@ -1,14 +1,14 @@
 <template>
-	<section class="footer-mode" :style="[{ backgroundColor: modeMap[currentMode].color }]" :title="modeMap[currentMode].hint">
+	<section class="footer-context" :style="[{ backgroundColor: contextMap[currentContext].color }]" :title="contextMap[currentContext].hint">
 		<span class="icon" aria-hidden="true">›‹</span>
-		<span class="text">{{ modeMap[currentMode].text }}</span>
+		<span class="text">{{ contextMap[currentContext].text }}</span>
 	</section>
 </template>
 
 <script setup lang="ts">
 /*
 	Индикатор режима. По задумке есть следующие режимы:
-	1. Обычный режим сцены (не редактируется)
+	1. Режим выбора элемента (не редактируется)
 		Элементы можно выделять, перетаскивать, удалять, менять их свойства и т.д.
 	2. Режим редактирования элемента
 		Все реакции клики, перетаскиевания,
@@ -24,24 +24,24 @@ import { computed } from 'vue';
 import { useSceneStore } from '@/stores/SceneStore';
 
 const sceneStore = useSceneStore();
-const modeMap = {
-	DEFAULT:	{ text: 'Обычный',			color: `#007bff`,	hint: 'Обычный режим сцены' },
+const contextMap = {
+	SELECT:		{ text: 'Выбор',			color: `#007bff`,	hint: 'Режим выбора элемента' },
 	EDIT:		{ text: 'Редактирование',	color: `#a72b68`,	hint: 'Режим редактирования элемента' },
 	NEW:		{ text: 'Добавление',		color: `#2e8b57`,	hint: 'Режим редактирования нового элемента' },
 };
 
-const currentMode = computed(() => {
+const currentContext = computed(() => {
 	if( sceneStore.editableId )
 		return 'EDIT';
 	// else if(  )
 	// 	return 'NEW';
 	else
-		return 'DEFAULT';
+		return 'SELECT';
 });
 </script>
 
 <style lang="scss">
-.footer-mode {
+.footer-context {
 	display: inline-flex;
 	align-items: center;
 	gap: .35rem;
