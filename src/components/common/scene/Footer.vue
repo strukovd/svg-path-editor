@@ -6,7 +6,7 @@
 				`item-${item.key.toLowerCase()}`,
 				{ 'clickable': item.clickable }
 			]"
-			@click="item.clickable"
+			@click="item.action?.()"
 		>
 			<div v-if="item.key === 'spacer'" class="spacer"></div>
 			<div v-else-if="item.key === 'separator'" class="separator"></div>

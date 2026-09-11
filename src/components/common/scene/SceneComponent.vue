@@ -16,6 +16,25 @@
 			<SceneGrid/>
 			<SceneReferenceImage/>
 
+			<g class="elements">
+				<ElementComponent v-for="element of sceneStore.elements" :key="element.id" :element="element"/>
+			</g>
+
+			<g class="transform-layer">
+				<SceneEntityBox
+					v-if="sceneStore.mode === 'transform' && selectedBox && selectedElement"
+					:box="selectedBox"
+					:active="true"
+					:locked="selectedElement.attrs.locked === true"
+					:opacity="Number(selectedElement.attrs.opacity ?? 1)"
+					@select="sceneStore.selectElement(selectedElement.id)"
+					@change-box="changeSelectedBox"
+					@change-opacity="opacity => sceneStore.setElementOpacity(selectedElement!.id, opacity)"
+					@toggle-lock="sceneStore.toggleElementLock(selectedElement.id)"
+					@remove="sceneStore.removeElement(selectedElement.id)"
+				/>
+			</g>
+
 			<g name="debug" fill="whitesmoke">
 				<text x="0" y="150">{{ viewBox }}</text>
 				<text x="0" y="300">{{ visibleBounds }}</text>
@@ -33,22 +52,30 @@
 
 <script lang="ts" setup>
 import { computed, onMounted, useTemplateRef } from 'vue';
+import { getElementBox } from '@/lib/scene/elements';
 import { useSceneStore } from '@/stores/SceneStore';
+import type { SceneBox } from '@/types/scene-entity';
 import { useSceneZoom } from '@/composables/scene/useSceneZoom.ts';
 import { useSceneMover } from '@/composables/scene/useSceneMover.ts';
+import SceneEntityBox from './SceneEntityBox.vue';
 import SceneGrid from './SceneGrid.vue';
 import SceneReferenceImage from './SceneReferenceImage.vue';
 import { useSceneCalibrator } from '@/composables/scene/useSceneCalibrator.ts';
+import { useSceneDemoSeeds } from '@/composables/scene/useSceneDemo.ts';
+import ElementComponent from './ElementComponent.vue';
 const sceneStore = useSceneStore();
+
+sceneStore.ensureInitialized();
 
 const pSceneElement = useTemplateRef<SVGSVGElement>('sceneElement');
 const onWheel = useSceneZoom().onWheel;
 const activate = useSceneMover().activate;
 
 useSceneCalibrator(pSceneElement);
+useSceneDemoSeeds().injectDemoData();
 
 function init() {
-	if( !pSceneElement.value ) {
+	if (!pSceneElement.value) {
 		console.error('pSceneElement is null');
 		return;
 	}
@@ -88,6 +115,20 @@ const visibleBounds = computed(() => {
 	return { left, top, right, bottom };
 });
 
+const selectedElement = computed(() => {
+	if (sceneStore.selectedIds.length !== 1) return null;
+	return sceneStore.elements.find(element => element.id === sceneStore.selectedIds[0]) || null;
+});
+
+const selectedBox = computed(() => {
+	if (!selectedElement.value) return null;
+	return getElementBox(selectedElement.value);
+});
+
+function changeSelectedBox(box: SceneBox) {
+	if (!selectedElement.value) return;
+	sceneStore.updateElementBox(selectedElement.value.id, box);
+}
 </script>
 
 <style lang="scss">
@@ -113,6 +154,26 @@ const visibleBounds = computed(() => {
 		height: 100%;
 		display: block;
 		background-color: var(--scene-color);
+
+		.elements {
+			.element {
+				cursor: pointer;
+
+				&.selected {
+					stroke: #00c2ff;
+				}
+			}
+
+			.line {
+				fill: none;
+			}
+		}
+
+		.transform-layer {
+			.scene-entity-box {
+				pointer-events: all;
+			}
+		}
 	}
 }
 </style>

@@ -1,4 +1,4 @@
-class Svg {
+export class SvgDocument {
 	// VirtualElement[]
 	static parse(svgString: string) {
 		const parser = new DOMParser();

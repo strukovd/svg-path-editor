@@ -4,6 +4,16 @@
 
 		<g v-if="active" class="scene-entity-controls">
 			<rect
+				v-if="canMove"
+				class="move-area"
+				:x="box.x"
+				:y="box.y"
+				:width="box.width"
+				:height="box.height"
+				vector-effect="non-scaling-stroke"
+			/>
+
+			<rect
 				class="scene-entity-outline"
 				:x="box.x"
 				:y="box.y"
@@ -86,6 +96,7 @@ const props = withDefaults(defineProps<{
 const emit = defineEmits<{
 	select: [];
 	'change-box': [box: SceneBox];
+	'change-end': [];
 	'change-opacity': [opacity: number];
 	'toggle-lock': [];
 	remove: [];
@@ -181,6 +192,9 @@ function drag(e: MouseEvent) {
 }
 
 function stopDrag() {
+	if (dragState.value) {
+		emit('change-end');
+	}
 	dragState.value = null;
 	document.removeEventListener('mousemove', drag);
 	document.removeEventListener('mouseup', stopDrag);
@@ -219,6 +233,12 @@ onUnmounted(() => {
 
 <style lang="scss">
 .scene-entity-box {
+	.move-area {
+		fill: transparent;
+		stroke: transparent;
+		cursor: move;
+	}
+
 	.scene-entity-outline {
 		fill: transparent;
 		stroke: #00c2ff;

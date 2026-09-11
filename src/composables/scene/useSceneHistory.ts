@@ -13,7 +13,7 @@ export function useSceneHistory() {
 			elements: clonePlain(sceneStore.elements),
 			selectedIds: [...sceneStore.selectedIds],
 			editableId: sceneStore.editableId,
-			mode: sceneStore.mode,
+			mode: sceneStore.displayMode,
 			tool: sceneStore.tool,
 		};
 	}
@@ -24,7 +24,7 @@ export function useSceneHistory() {
 		sceneStore.elements = next.elements;
 		sceneStore.selectedIds = next.selectedIds;
 		sceneStore.editableId = next.editableId;
-		sceneStore.mode = next.mode;
+		sceneStore.displayMode = next.mode;
 		sceneStore.tool = next.tool;
 	}
 
