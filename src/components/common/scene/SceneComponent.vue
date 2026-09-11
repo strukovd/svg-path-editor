@@ -7,7 +7,7 @@
 			:viewBox="viewBox"
 			@mousedown="activate"
 			@wheel.prevent="onWheel"
-			@mousemove="sceneStore.updateCursor($event.clientX, $event.clientY, pSceneElement)"
+			@mousemove="updateCursor($event.clientX, $event.clientY, pSceneElement)"
 			@resize="()=>{ console.log(`resize`); }"
 		>
 			<defs>
@@ -17,21 +17,27 @@
 			<SceneReferenceImage/>
 
 			<g class="elements">
-				<ElementComponent v-for="element of sceneStore.elements" :key="element.id" :element="element"/>
+				<ElementComponent
+					v-for="element of sceneStore.elements"
+					:key="element.id"
+					:element="element"
+					:selected="isSelected(element.id)"
+					@select="selectElement"
+				/>
 			</g>
 
 			<g class="transform-layer">
 				<SceneEntityBox
-					v-if="sceneStore.mode === 'transform' && selectedBox && selectedElement"
+					v-if="context.type === 'SELECTION' && selectedBox && selectedElement"
 					:box="selectedBox"
 					:active="true"
 					:locked="selectedElement.attrs.locked === true"
 					:opacity="Number(selectedElement.attrs.opacity ?? 1)"
-					@select="sceneStore.selectElement(selectedElement.id)"
+					@select="selectElement(selectedElement.id)"
 					@change-box="changeSelectedBox"
-					@change-opacity="opacity => sceneStore.setElementOpacity(selectedElement!.id, opacity)"
-					@toggle-lock="sceneStore.toggleElementLock(selectedElement.id)"
-					@remove="sceneStore.removeElement(selectedElement.id)"
+					@change-opacity="opacity => setElementOpacity(selectedElement!.id, opacity)"
+					@toggle-lock="toggleElementLock(selectedElement.id)"
+					@remove="removeElement(selectedElement.id)"
 				/>
 			</g>
 
@@ -52,7 +58,6 @@
 
 <script lang="ts" setup>
 import { computed, onMounted, useTemplateRef } from 'vue';
-import { getElementBox } from '@/lib/scene/elements';
 import { useSceneStore } from '@/stores/SceneStore';
 import type { SceneBox } from '@/types/scene-entity';
 import { useSceneZoom } from '@/composables/scene/useSceneZoom.ts';
@@ -62,14 +67,20 @@ import SceneGrid from './SceneGrid.vue';
 import SceneReferenceImage from './SceneReferenceImage.vue';
 import { useSceneCalibrator } from '@/composables/scene/useSceneCalibrator.ts';
 import { useSceneDemoSeeds } from '@/composables/scene/useSceneDemo.ts';
+import { useSceneContext } from '@/composables/scene/useSceneContext.ts';
+import { useSceneElements } from '@/composables/scene/useSceneElements.ts';
+import { useSceneMouse } from '@/composables/scene/useSceneMouse.ts';
+import { useSceneSelection } from '@/composables/scene/useSceneSelection.ts';
 import ElementComponent from './ElementComponent.vue';
 const sceneStore = useSceneStore();
-
-sceneStore.ensureInitialized();
 
 const pSceneElement = useTemplateRef<SVGSVGElement>('sceneElement');
 const onWheel = useSceneZoom().onWheel;
 const activate = useSceneMover().activate;
+const { context } = useSceneContext();
+const { selectedElement, selectedBox, isSelected, selectElement } = useSceneSelection();
+const { updateElementBox, setElementOpacity, toggleElementLock, removeElement } = useSceneElements();
+const { updateCursor } = useSceneMouse();
 
 useSceneCalibrator(pSceneElement);
 useSceneDemoSeeds().injectDemoData();
@@ -115,19 +126,9 @@ const visibleBounds = computed(() => {
 	return { left, top, right, bottom };
 });
 
-const selectedElement = computed(() => {
-	if (sceneStore.selectedIds.length !== 1) return null;
-	return sceneStore.elements.find(element => element.id === sceneStore.selectedIds[0]) || null;
-});
-
-const selectedBox = computed(() => {
-	if (!selectedElement.value) return null;
-	return getElementBox(selectedElement.value);
-});
-
 function changeSelectedBox(box: SceneBox) {
 	if (!selectedElement.value) return;
-	sceneStore.updateElementBox(selectedElement.value.id, box);
+	updateElementBox(selectedElement.value.id, box);
 }
 </script>
 

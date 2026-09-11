@@ -167,3 +167,16 @@
 `PropsBar` проходит циклом по `editorStore.panels.items`, оборачивает каждую панель в `BaseIsland` и подставляет компонент через `<component>`.
 
 Компоненты панелей грузятся лениво через `loadPanelComponent()` из `src/utils/asyncLoaders.ts`. Для `import.meta.glob()` нужна явная типизация `{ default: Component }`, иначе Vite/TypeScript видит loader как `() => Promise<unknown>` и `defineAsyncComponent()` ругается на типы.
+
+## 2026-09-11
+
+### Исходное и вычисляемое состояние сцены
+
+Уточнено правило декомпозиции сцены:
+
+- `SceneStore` хранит исходные общедоступные реактивные поля;
+- методы и производные реактивные значения находятся в тематических composables;
+- вычисляемое значение из composable не дублируется отдельным полем store;
+- composables с побочными эффектами должны иметь одного явного владельца, а composables только с `computed` можно использовать в нескольких компонентах.
+
+`mode` переименован в `displayMode`, его значения — `OUTLINE` и `PREVIEW`. Контекст команд вычисляется в `useSceneContext` из `selectedIds` и `editableId`. Старые getters/actions удалены из `SceneStore`, а используемое поведение разнесено по `useSceneSelection`, `useSceneElements` и `useSceneMouse`.

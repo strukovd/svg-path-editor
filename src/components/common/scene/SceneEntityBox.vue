@@ -59,6 +59,7 @@
 <script lang="ts" setup>
 import { computed, onUnmounted, ref } from 'vue';
 import { useSceneStore } from '@/stores/SceneStore';
+import { useSceneMouse } from '@/composables/scene/useSceneMouse';
 import { moveBox, resizeBox } from '@/lib/scene/entity-box';
 import type { ResizeHandle, SceneBox, SceneEntityCapabilities } from '@/types/scene-entity';
 
@@ -103,6 +104,7 @@ const emit = defineEmits<{
 }>();
 
 const s = useSceneStore();
+const { clientToWorld } = useSceneMouse();
 const dragState = ref<DragState | null>(null);
 const resizeHandles: ResizeHandle[] = ['nw', 'ne', 'sw', 'se'];
 
@@ -139,7 +141,7 @@ function startMove(e: MouseEvent) {
 	const svgElement = getSceneSvg(e.currentTarget);
 	if (!svgElement) return;
 
-	const start = s.clientToWorld(e.clientX, e.clientY, svgElement);
+	const start = clientToWorld(e.clientX, e.clientY, svgElement);
 	dragState.value = {
 		mode: 'move',
 		startX: start.x,
@@ -159,7 +161,7 @@ function startResize(handle: ResizeHandle, e: MouseEvent) {
 	const svgElement = getSceneSvg(e.currentTarget);
 	if (!svgElement) return;
 
-	const start = s.clientToWorld(e.clientX, e.clientY, svgElement);
+	const start = clientToWorld(e.clientX, e.clientY, svgElement);
 	dragState.value = {
 		mode: 'resize',
 		handle,
@@ -177,7 +179,7 @@ function drag(e: MouseEvent) {
 	const state = dragState.value;
 	if (!state) return;
 
-	const current = s.clientToWorld(e.clientX, e.clientY, state.svgElement);
+	const current = clientToWorld(e.clientX, e.clientY, state.svgElement);
 	const dx = current.x - state.startX;
 	const dy = current.y - state.startY;
 

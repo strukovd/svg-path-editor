@@ -1,7 +1,7 @@
 <template>
 	<rect
 		v-if="element.type === 'rect' && element.attrs.visible !== false"
-		:class="['element', 'rect', { selected: sceneStore.selectedIds.includes(element.id) }]"
+		:class="['element', 'rect', { selected }]"
 		:x="element.x"
 		:y="element.y"
 		:width="element.width"
@@ -11,11 +11,11 @@
 		:stroke-width="element.attrs.strokeWidth || 1"
 		:opacity="element.attrs.opacity ?? 1"
 		vector-effect="non-scaling-stroke"
-		@mousedown.stop.prevent="sceneStore.selectElement(element.id)"
+		@mousedown.stop.prevent="emit('select', element.id)"
 	/>
 	<line
 		v-else-if="element.type === 'line' && element.attrs.visible !== false"
-		:class="['element', 'line', { selected: sceneStore.selectedIds.includes(element.id) }]"
+		:class="['element', 'line', { selected }]"
 		:x1="element.x1"
 		:y1="element.y1"
 		:x2="element.x2"
@@ -24,11 +24,11 @@
 		:stroke-width="element.attrs.strokeWidth || 1"
 		:opacity="element.attrs.opacity ?? 1"
 		vector-effect="non-scaling-stroke"
-		@mousedown.stop.prevent="sceneStore.selectElement(element.id)"
+		@mousedown.stop.prevent="emit('select', element.id)"
 	/>
 	<circle
 		v-else-if="element.type === 'circle' && element.attrs.visible !== false"
-		:class="['element', 'circle', { selected: sceneStore.selectedIds.includes(element.id) }]"
+		:class="['element', 'circle', { selected }]"
 		:cx="element.cx"
 		:cy="element.cy"
 		:r="element.r"
@@ -37,11 +37,11 @@
 		:stroke-width="element.attrs.strokeWidth || 1"
 		:opacity="element.attrs.opacity ?? 1"
 		vector-effect="non-scaling-stroke"
-		@mousedown.stop.prevent="sceneStore.selectElement(element.id)"
+		@mousedown.stop.prevent="emit('select', element.id)"
 	/>
 	<ellipse
 		v-else-if="element.type === 'ellipse' && element.attrs.visible !== false"
-		:class="['element', 'ellipse', { selected: sceneStore.selectedIds.includes(element.id) }]"
+		:class="['element', 'ellipse', { selected }]"
 		:cx="element.cx"
 		:cy="element.cy"
 		:rx="element.rx"
@@ -51,11 +51,11 @@
 		:stroke-width="element.attrs.strokeWidth || 1"
 		:opacity="element.attrs.opacity ?? 1"
 		vector-effect="non-scaling-stroke"
-		@mousedown.stop.prevent="sceneStore.selectElement(element.id)"
+		@mousedown.stop.prevent="emit('select', element.id)"
 	/>
 	<image
 		v-else-if="element.type === 'image' && element.attrs.visible !== false"
-		:class="['element', 'image', { selected: sceneStore.selectedIds.includes(element.id) }]"
+		:class="['element', 'image', { selected }]"
 		:href="element.href"
 		:x="element.x"
 		:y="element.y"
@@ -63,19 +63,21 @@
 		:height="element.height"
 		:opacity="element.attrs.opacity ?? 1"
 		:preserveAspectRatio="element.preserveAspectRatio || 'none'"
-		@mousedown.stop.prevent="sceneStore.selectElement(element.id)"
+		@mousedown.stop.prevent="emit('select', element.id)"
 	/>
 </template>
 
 <script lang="ts" setup>
-import { useSceneStore } from '@/stores/SceneStore';
 import type { SceneElement } from '@/types/scene';
 
-const props = defineProps<{
+defineProps<{
 	element: SceneElement;
+	selected?: boolean;
 }>();
 
-const sceneStore = useSceneStore();
+const emit = defineEmits<{
+	select: [id: string];
+}>();
 </script>
 
 <style lang="scss">

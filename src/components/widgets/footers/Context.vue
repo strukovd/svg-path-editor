@@ -1,7 +1,7 @@
 <template>
-	<section class="footer-context" :style="[{ backgroundColor: contextMap[currentContext].color }]" :title="contextMap[currentContext].hint">
+	<section class="footer-context" :style="{ backgroundColor: currentContext.color }" :title="currentContext.hint">
 		<!-- <span class="icon" aria-hidden="true"></span> -->
-		<span class="text">{{ contextMap[currentContext].text }}</span>
+		<span class="text">{{ currentContext.text }}</span>
 	</section>
 </template>
 
@@ -12,15 +12,15 @@
 	К примеру: Ctrl+A - выделить все элементы или точки,
 	Ctrl+C\Ctrl+D - копировать\дублировать элемент или точку, и т.д.
 	---
-	Индикатор режима. По задумке есть следующие режимы:
-	1. Режим FREE - свободный контекст сцены (конкретного фокуса нету)
+	Индикатор контекста. По задумке есть следующие состояния:
+	1. SCENE - свободный контекст сцены (конкретного фокуса нету)
 		Элементы можно выделять, перетаскивать, удалять, менять их свойства и т.д.
-	2. SELECTED - Есть выбранный элемент
+	2. SELECTION - есть выбранный элемент или несколько элементов
 		Горячие клавиши, панель свойств - относятся к выбранному элементу.
-	3. EDITING - Режим редактирования элемента
+	3. ELEMENT_EDIT - редактирование внутренностей элемента
 		Все реакции клики, перетаскиевания,
 		горячих клавиш относятся к редактируемому элементу.
-	4. DRAFT (Необходимость еще под вопросом) - Режим редактирования нового элемента.
+	4. DRAFT (необходимость еще под вопросом) - редактирование нового элемента.
 		Похож на режим редактирования элемента,
 		но в этом случае могут быть свои нюансы,
 		ведь элемент еще в процессе рисовки,
@@ -31,11 +31,10 @@
 	(такое есть во всех редакторах) но если так посудить,
 	горячие клавиши (и свойства) могут быть общими,
 	могут относится к конкретному выбранному элементу
-	(SELECT - этот режим я еще не определился где вводить,
-	но он будто напрашивается в context),
-	EDIT редактируемый элемент - это уже не просто выбранный элемент,
+	SELECTION относится к выбранным целым элементам,
+	ELEMENT_EDIT - это уже не просто выбранный элемент,
 	это элемент который выбрали и начали редактировать его точки,
-	NEW - тут тоже спорно, потому что по сути это режим редактирования,
+	DRAFT - тут тоже спорно, потому что по сути это режим редактирования,
 	но в то же время у ногово (только что добавленного элемента)
 	могут быть свои особенности.
 	---
@@ -44,24 +43,16 @@
 	курсор решает кому относятся горячие клавиши.
 */
 import { computed } from 'vue';
-import { useSceneStore } from '@/stores/SceneStore';
+import { useSceneContext, type SceneContext } from '@/composables/scene/useSceneContext';
 
-const sceneStore = useSceneStore();
-const contextMap = {
-	FREE:		{ text: 'Сцена',			color: `#007bff`,	hint: 'Контекст сцены' },
-	SELECTING:	{ text: 'Элемент',			color: `#007bff`,	hint: 'Контекст выбранного элемента' },
-	EDITING:	{ text: 'Редактирование',	color: `#a72b68`,	hint: 'Контекст редактируемого элемента' },
-	// DRAFT:		{ text: 'Добавление',		color: `#2e8b57`,	hint: 'Контекст редактирования нового элемента' },
+const { context } = useSceneContext();
+const contextMap: Record<SceneContext['type'], { text: string; color: string; hint: string }> = {
+	SCENE:			{ text: 'Сцена',			color: '#007bff', hint: 'Контекст сцены' },
+	SELECTION:		{ text: 'Элемент',			color: '#007bff', hint: 'Контекст выбранных элементов' },
+	ELEMENT_EDIT:	{ text: 'Редактирование',	color: '#a72b68', hint: 'Контекст редактируемого элемента' },
 };
 
-const currentContext = computed(() => {
-	if( sceneStore.editableId )
-		return 'EDIT';
-	// else if(  )
-	// 	return 'DRAFT';
-	else
-		return 'FREE';
-});
+const currentContext = computed(() => contextMap[context.value.type]);
 </script>
 
 <style lang="scss">

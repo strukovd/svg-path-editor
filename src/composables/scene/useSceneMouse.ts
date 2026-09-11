@@ -1,41 +1,26 @@
-import { onMounted, onUnmounted, type Ref } from 'vue';
 import { useSceneStore } from '@/stores/SceneStore';
 
-// TODO: используется?? или это новая реализация для coords..
+export function useSceneMouse() {
+	const sceneStore = useSceneStore();
 
-export function useCanvasMouse(svgRef: Ref<SVGSVGElement | null>) {
-	// const sceneStore = useSceneStore();
+	function clientToWorld(clientX: number, clientY: number, svgElement: SVGSVGElement | null) {
+		if (!svgElement) return { x: 0, y: 0 };
 
-	// let latestClientX = 0;
-	// let latestClientY = 0;
-	// let isMoving = false;
-	// let rafId: number | null = null;
+		const rect = svgElement.getBoundingClientRect();
+		const x = sceneStore.camera.x + (clientX - rect.left) * (sceneStore.camera.width / rect.width);
+		const y = sceneStore.camera.y + (clientY - rect.top) * (sceneStore.camera.height / rect.height);
 
-	// // Функция, которую мы привяжем к @mousemove в шаблоне
-	// const onMouseMove = (e: MouseEvent) => {
-	// 	latestClientX = e.clientX;
-	// 	latestClientY = e.clientY;
-	// 	isMoving = true;
-	// };
+		return { x, y };
+	}
 
-	// const updateLoop = () => {
-	// 	if (isMoving && svgRef.value) {
-	// 		sceneStore.updateCursor(latestClientX, latestClientY, svgRef.value);
-	// 		isMoving = false;
-	// 	}
-	// 	rafId = requestAnimationFrame(updateLoop);
-	// };
+	function updateCursor(clientX: number, clientY: number, svgElement: SVGSVGElement | null) {
+		const { x, y } = clientToWorld(clientX, clientY, svgElement);
+		sceneStore.cursor.x = Math.round(x);
+		sceneStore.cursor.y = Math.round(y);
+	}
 
-	// onMounted(() => {
-	// 	rafId = requestAnimationFrame(updateLoop);
-	// });
-
-	// onUnmounted(() => {
-	// 	if (rafId) cancelAnimationFrame(rafId);
-	// });
-
-	// // Возвращаем только то, что нужно шаблону
-	// return {
-	// 	onMouseMove,
-	// };
+	return {
+		clientToWorld,
+		updateCursor,
+	};
 }

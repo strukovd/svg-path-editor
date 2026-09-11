@@ -1,8 +1,4 @@
-// export type SceneMode =
-// 	'select' // выбор элементов
-// 	| 'transform'
-// 	| 'edit'
-// 	| 'draw';
+export type SceneDisplayMode = 'OUTLINE' | 'PREVIEW';
 export type SceneTool = 'rect' | 'line' | 'circle' | 'ellipse' | 'image' | 'path';
 export type SceneElementType = SceneTool | 'polyline' | 'polygon' | 'text' | 'g';
 
@@ -75,6 +71,6 @@ export interface SceneSnapshot {
 	elements: SceneElement[];
 	selectedIds: string[];
 	editableId: string | null;
-	mode: any;
-	tool: SceneTool | null;
+	displayMode: SceneDisplayMode;
+	activeTool: SceneTool | null;
 }

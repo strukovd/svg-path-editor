@@ -24,7 +24,7 @@ export function useSceneContext() {
 		if (sceneStore.selectedIds.length) {
 			return {
 				type: 'SELECTION',
-				elementIds: sceneStore.selectedIds,
+				elementIds: [...sceneStore.selectedIds],
 			};
 		}
 
