@@ -7,7 +7,7 @@
 			:viewBox="viewBox"
 			@mousedown="activate"
 			@wheel.prevent="onWheel"
-			@mousemove="sceneStore.updateCursor($event.clientX, $event.clientY, pSceneElement)"
+			@mousemove="updateCursor($event.clientX, $event.clientY, pSceneElement)"
 			@resize="()=>{ console.log(`resize`); }"
 		>
 			<defs>
@@ -15,6 +15,31 @@
 			</defs>
 			<SceneGrid/>
 			<SceneReferenceImage/>
+
+			<g class="elements">
+				<ElementComponent
+					v-for="element of sceneStore.elements"
+					:key="element.id"
+					:element="element"
+					:selected="isSelected(element.id)"
+					@select="selectElement"
+				/>
+			</g>
+
+			<g class="transform-layer">
+				<SceneEntityBox
+					v-if="context.type === 'SELECTION' && selectedBox && selectedElement"
+					:box="selectedBox"
+					:active="true"
+					:locked="selectedElement.attrs.locked === true"
+					:opacity="Number(selectedElement.attrs.opacity ?? 1)"
+					@select="selectElement(selectedElement.id)"
+					@change-box="changeSelectedBox"
+					@change-opacity="opacity => setElementOpacity(selectedElement!.id, opacity)"
+					@toggle-lock="toggleElementLock(selectedElement.id)"
+					@remove="removeElement(selectedElement.id)"
+				/>
+			</g>
 
 			<g name="debug" fill="whitesmoke">
 				<text x="0" y="150">{{ viewBox }}</text>
@@ -34,21 +59,34 @@
 <script lang="ts" setup>
 import { computed, onMounted, useTemplateRef } from 'vue';
 import { useSceneStore } from '@/stores/SceneStore';
+import type { SceneBox } from '@/types/scene-entity';
 import { useSceneZoom } from '@/composables/scene/useSceneZoom.ts';
 import { useSceneMover } from '@/composables/scene/useSceneMover.ts';
+import SceneEntityBox from './SceneEntityBox.vue';
 import SceneGrid from './SceneGrid.vue';
 import SceneReferenceImage from './SceneReferenceImage.vue';
 import { useSceneCalibrator } from '@/composables/scene/useSceneCalibrator.ts';
+import { useSceneDemoSeeds } from '@/composables/scene/useSceneDemo.ts';
+import { useSceneContext } from '@/composables/scene/useSceneContext.ts';
+import { useSceneElements } from '@/composables/scene/useSceneElements.ts';
+import { useSceneMouse } from '@/composables/scene/useSceneMouse.ts';
+import { useSceneSelection } from '@/composables/scene/useSceneSelection.ts';
+import ElementComponent from './ElementComponent.vue';
 const sceneStore = useSceneStore();
 
 const pSceneElement = useTemplateRef<SVGSVGElement>('sceneElement');
 const onWheel = useSceneZoom().onWheel;
 const activate = useSceneMover().activate;
+const { context } = useSceneContext();
+const { selectedElement, selectedBox, isSelected, selectElement } = useSceneSelection();
+const { updateElementBox, setElementOpacity, toggleElementLock, removeElement } = useSceneElements();
+const { updateCursor } = useSceneMouse();
 
 useSceneCalibrator(pSceneElement);
+useSceneDemoSeeds().injectDemoData();
 
 function init() {
-	if( !pSceneElement.value ) {
+	if (!pSceneElement.value) {
 		console.error('pSceneElement is null');
 		return;
 	}
@@ -88,6 +126,10 @@ const visibleBounds = computed(() => {
 	return { left, top, right, bottom };
 });
 
+function changeSelectedBox(box: SceneBox) {
+	if (!selectedElement.value) return;
+	updateElementBox(selectedElement.value.id, box);
+}
 </script>
 
 <style lang="scss">
@@ -113,6 +155,26 @@ const visibleBounds = computed(() => {
 		height: 100%;
 		display: block;
 		background-color: var(--scene-color);
+
+		.elements {
+			.element {
+				cursor: pointer;
+
+				&.selected {
+					stroke: #00c2ff;
+				}
+			}
+
+			.line {
+				fill: none;
+			}
+		}
+
+		.transform-layer {
+			.scene-entity-box {
+				pointer-events: all;
+			}
+		}
 	}
 }
 </style>

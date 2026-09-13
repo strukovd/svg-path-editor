@@ -7,14 +7,37 @@ export type LayoutItem = {
 	icon?: string;
 	title?: string;
 	isCollapsed?: boolean;
+	clickable?: boolean;
 	action?: () => void;
+};
+export type MenuItem = LayoutItem & {
+	type?: 'action' | 'checkbox';
+	children?: {
+		items: MenuItem[];
+	};
 };
 export type SidePanel = LayoutItem;
 export type FooterPanel = LayoutItem;
 
 export const useAppStore = defineStore('app', () => {
 	const loading = ref(true);
-	const menu = List([]);
+	const menu = List<MenuItem>([
+		{ key: 'File', icon: 'folder' },
+		{ key: 'Edit', icon: 'edit' },
+		{ key: 'View', icon: 'eye', children: List([
+			{ key: 'Grid', title: 'Grid', icon: 'grid', type: 'checkbox' },
+			{ key: 'viewbox', title: 'Viewbox', children: List([
+				{ key: 'Zoom', title: 'Zoom', icon: 'zoom' },
+				{ key: 'Pan', title: 'Pan', icon: 'hand' },
+			]) },
+			{ key: 'Snap', title: 'Snap', icon: 'magnet' },
+			{ key: 'Rulers', title: 'Rulers', icon: 'ruler' },
+			{ key: 'Guides', title: 'Guides', icon: 'guides' },
+			{ key: 'Panes', title: 'Panes', icon: 'panes' },
+			{ key: 'Layers', title: 'Layers', icon: 'layers' },
+		]) },
+
+	]);
 	const panels = List<SidePanel>([ // видимые панели справа
 		{ key: 'Elements', title: 'Elements' },
 		{ key: 'Properties', title: 'Properties' },

@@ -1,0 +1,204 @@
+Затем:
+1. Удалить settings.grid, заменив его на grid.enabled.
+2. Переименовать useSceneGrid в useMutatorSceneGrid.
+3. Убрать из composable module-level reactive и gridWatcher.
+4. Использовать watchEffect, который записывает линии в sceneStore.grid.xLines_ и yLines_.
+5. Запускать мутатор один раз в SceneComponent.
+6. SceneGrid.vue оставить только компонентом отрисовки, читающим Store.
+7. Заодно исправить расчёт endX/endY, где сейчас не учитываются camera.x/y.
+
+
+---
+Аналог NestJS-модуля
+Идея с модулем, где просто запускаются другие, аналог файла <name>.module.ts, который служит наглядной картой используемых сущностей..
+
+Можно добавить один декларативный файл композиции:
+modules/scene/
+├── scene.module.ts
+├── SceneComponent.vue
+├── SceneStore.ts
+└── grid/
+
+// scene.module.ts
+export function useSceneModule(sceneElement: Ref<SVGSVGElement | null>) {
+	useMutatorSceneGrid();
+	useSceneCalibrator(sceneElement);
+	useSceneMouse();
+	useSceneZoom();
+}
+
+А в компоненте:
+useSceneModule(sceneElement);
+
+Этот файл будет играть роль упрощённого SceneModule из NestJS: по нему сразу видно, какие фоновые возможности подключает сцена. В нём не должно быть бизнес-логики — только композиция.
+
+Получится понятная карта:
+scene.module.ts         — что подключено к сцене
+SceneStore.ts           — какие данные есть
+grid/                   — всё устройство сетки
+SceneGridLayer.vue      — как сетка отображается
+useMutatorSceneGrid.ts  — кто её автоматически обновляет
+
+
+---
+
+Либо сделать еще жестче, отказаться от правил именований Vue, буквально папка которая включает:
+template.vue
+service.ts (функции)
+init.ts (тот самый scene.module.ts, то есть перечисление вызовов функций (из service.ts) который будут вызваны в template.vue)
+
+Внутри service.ts придерживатся правил именования:
+| Префикс | Строгое значение |
+|---|---|
+| `create` | Создаёт и возвращает новый независимый экземпляр |
+| `launch` | Запускает длительный фоновый процесс (запускает watcher) |
+| `stop` | Останавливает запущенный процесс |
+| `init` | Однократно инициализирует существующее состояние |
+| `get` | Возвращает существующее значение без создания |
+| `calculate` | Чистое вычисление |
+| `resolve` | Определяет результат из нескольких условий |
+| `toggle/set/reset` | Явная команда изменения |
+
+что бы понимать что производит вызов той или иной функции в service.ts
+Данные все так же в глобальном store.
+Таким образом каждый модуль будет содержать ожидаемо одинаковый состав файлов.
+
+
+---
+// scene.module.ts
+export function launchSceneModule() {
+	launchSceneGrid();
+	launchSceneContext();
+}
+
+// SceneComponent.vue
+launchSceneModule();
+
+
+---
+
+last answer
+
+Согласен. Если твоя главная цель — чтобы имя функции однозначно объясняло её поведение, универсальный `use` действительно слабоват.
+
+Во Vue `use` означает лишь «здесь используется Composition API», но не отвечает на важные вопросы:
+
+- создаётся новый экземпляр или возвращается существующий;
+- запускается ли watcher;
+- добавляется ли listener;
+- нужно ли вызывать функцию один раз;
+- есть ли побочный эффект;
+- требуется ли очистка.
+
+Можно отказаться от `use` для собственного кода и принять более строгую систему.
+
+| Префикс | Строгое значение |
+|---|---|
+| `create` | Создаёт и возвращает новый независимый экземпляр |
+| `launch` | Запускает длительный фоновый процесс |
+| `stop` | Останавливает запущенный процесс |
+| `init` | Однократно инициализирует существующее состояние |
+| `get` | Возвращает существующее значение без создания |
+| `calculate` | Чистое вычисление |
+| `resolve` | Определяет результат из нескольких условий |
+| `toggle/set/reset` | Явная команда изменения |
+
+Для сетки это будет читаться гораздо точнее:
+
+```ts
+createGridState();
+calculateGridLines();
+launchSceneGrid();
+toggleSceneGrid();
+```
+
+Причём `launch` стоит определить строго:
+
+> `launch...` запускает watcher, listener, observer, timer или другой продолжительный процесс. Функция вызывается один раз владельцем домена и может возвращать функцию остановки.
+
+Например:
+
+```ts
+export function launchSceneGrid() {
+	const sceneStore = useSceneStore();
+
+	initSceneGrid();
+
+	const stop = watchEffect(() => {
+		// Обновление grid.xLines_ и grid.yLines_
+	});
+
+	return stop;
+}
+```
+
+Точка композиции:
+
+```ts
+// scene.module.ts
+export function launchSceneModule() {
+	launchSceneGrid();
+	launchSceneContext();
+}
+```
+
+И вызов:
+
+```ts
+// SceneComponent.vue
+launchSceneModule();
+```
+
+Функции `launch...` лучше не смешивать с пользовательскими командами. То есть не возвращать из неё одновременно:
+
+```ts
+{
+	stop,
+	toggleGrid,
+	resetGrid,
+	setGridGap,
+}
+```
+
+Иначе однозначность снова исчезнет. Команды можно экспортировать отдельно из того же файла:
+
+```ts
+export function toggleSceneGrid() {}
+export function setSceneGridGap(value: number) {}
+export function resetSceneGrid() {}
+export function launchSceneGrid() {}
+```
+
+Для этого необязательно создавать по файлу на функцию:
+
+```text
+modules/scene/grid/
+├── grid.ts
+└── SceneGrid.vue
+```
+
+В `grid.ts` пока могут жить:
+
+```ts
+export interface GridState {}
+export function initSceneGrid() {}
+export function calculateGridLines() {}
+export function launchSceneGrid() {}
+export function toggleSceneGrid() {}
+```
+
+Когда файл действительно станет большим, его можно будет разделить по факту, а не заранее.
+
+Единственное исключение я бы оставил для стороннего API:
+
+```ts
+useSceneStore()
+```
+
+Это стандартное именование Pinia, и здесь большинство Vue-разработчиков понимают, что функция получает singleton Store из активной Pinia. Переименование её в `getSceneStore()` возможно, но будет идти против документации и привычного API Pinia без большой пользы.
+
+Итоговое правило может быть таким:
+
+> Префикс `use` используется только для API Vue/Pinia и сторонних библиотек. Собственные функции называются по фактическому поведению: `create`, `launch`, `init`, `calculate`, `get`, `set`, `toggle`, `reset`.
+
+Мне эта схема кажется подходящей для твоего проекта: она дороже в выборе названий, зато после перерыва имя `launchSceneGrid()` сразу сразу напомнит, что вызов запускает долгоживущий процесс и не должен бесконтрольно повторяться.

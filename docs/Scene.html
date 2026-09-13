@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="ru">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Scene structure</title>
+	<style>
+		:root {
+			color-scheme: dark;
+			font-family: sans-serif;
+			color: #f1f1f1;
+			background: #222222;
+			* {
+				box-sizing: border-box;
+			}
+
+			body {
+				min-width: 320px;
+				min-height: 100vh;
+				margin: 0;
+				padding: 12px;
+				background: #222222;
+
+				.middle {
+					width: 100%;
+					max-width: 800px;
+					margin: 0 auto;
+
+					.module-name,
+					.name {
+						font-size: 16px;
+						font-weight: 400;
+						line-height: 1;
+						text-align: center;
+					}
+					.module-name {
+						margin: 0 0 16px;
+					}
+
+					.component {
+						display: grid;
+						gap: 12px;
+						width: 100%;
+						padding: 14px;
+						background: #2d5d27;
+
+						.name {
+							margin: 0;
+						}
+
+						.template {
+							width: 100%;
+							height: 150px;
+							overflow: hidden;
+							background: #60865b;
+
+							svg {
+								display: block;
+								width: 100%;
+								height: 100%;
+							}
+						}
+
+						.store, .functions {
+							display: grid;
+							gap: 9px;
+
+							.field, .function {
+								display: grid;
+								place-items: center;
+								min-height: 35px;
+								padding: 8px 12px;
+								text-align: center;
+								border-radius: 5px;
+								>:first-child {
+									margin-bottom:.4em;
+									font-size:1rem;
+									font-family: monospace;
+								}
+								>:nth-child(2) {
+									font-size:.75rem;
+								}
+							}
+							.field {
+								background: #987605;
+							}
+							.function {
+								background: #51377a;
+							}
+						}
+					}
+				}
+			}
+
+			@media (max-width: 520px) {
+				.component {
+					padding: 10px;
+				}
+				.template {
+					height: 120px;
+				}
+			}
+		}
+	</style>
+</head>
+<body>
+	<main class="middle">
+		<h1 class="module-name">Scene</h1>
+
+		<section class="component">
+			<section class="name">SceneComponent.vue</section>
+
+			<section class="template" aria-label="Scene grid template">
+				<svg viewBox="0 0 800 150" preserveAspectRatio="none" aria-hidden="true">
+					<defs>
+						<pattern id="minor-grid" width="8" height="8" patternUnits="userSpaceOnUse">
+							<path d="M 8 0 L 0 0 0 8" fill="none" stroke="#b4ccb0" stroke-width="0.6"/>
+						</pattern>
+						<pattern id="major-grid" width="40" height="40" patternUnits="userSpaceOnUse">
+							<rect width="40" height="40" fill="url(#minor-grid)"/>
+							<path d="M 40 0 L 0 0 0 40" fill="none" stroke="#d6e2d3" stroke-width="1"/>
+						</pattern>
+					</defs>
+					<rect width="800" height="150" fill="url(#major-grid)"/>
+				</svg>
+			</section>
+
+			<section class="store">
+				<!-- ready: false,
+				scene: { // параметры сцены
+					width: 0, // Пока нету <svg>, мы не можем знать размеры сцены
+					height: 0,
+				},
+				camera: { // параметры камеры (viewBox)
+					x: 0,
+					y: 0,
+					width: 0,
+					height: 0,
+					scale: 1,
+					minScale: 0.1,
+					stepScale: 0.2,
+				},
+				cursor: { x: 0, y: 0 }, // координаты курсора на холсте
+
+				elements: [] as SceneElement[], // элементы сцены
+				selectedIds: [] as string[], // выбранные элементы
+				editableId: null as string | null, // редактируемый элемент
+				displayMode: 'OUTLINE' as SceneDisplayMode,
+				activeTool: null as SceneTool | null, // Заряд курсора (rect, line, circle, ellipse, image, path)
+				// context вычисляется в useSceneContext
+				// draftElement: null, // Новый элемент в процессе рисования
+
+				history: [] as SceneSnapshot[],
+				historyCursor: -1,
+
+				settings: {
+					grid: true,
+				}, -->
+				<div class="field">
+					<div>ready</div>
+					<div>Статус готовности</div>
+				</div>
+				<div class="field">
+					<div>scene</div>
+					<div>Параметры сцены</div>
+				</div>
+				<div class="field">
+					<div>camera</div>
+					<div>Параметры камеры</div>
+				</div>
+				<div class="field">
+					<div>cursor</div>
+					<div>Координаты курсора на холсте</div>
+				</div>
+				<div class="field">
+					<div>elements</div>
+					<div>Элементы сцены</div>
+				</div>
+				<div class="field">
+					<div>selectedIds</div>
+					<div>Выбранные элементы</div>
+				</div>
+				<div class="field">
+					<div>editableId</div>
+					<div>Редактируемый элемент</div>
+				</div>
+				<div class="field">
+					<div>displayMode</div>
+					<div>Режим отображения</div>
+				</div>
+				<div class="field">
+					<div>activeTool</div>
+					<div>Заряд курсора</div>
+				</div>
+				<div class="field">
+					<div>context</div>
+					<div>context</div>
+				</div>
+				<div class="field">
+					<div>history</div>
+					<div>history</div>
+				</div>
+				<div class="field">
+					<div>historyCursor</div>
+					<div>historyCursor</div>
+				</div>
+				<div class="field">
+					<div>settings</div>
+					<div>Настройки</div>
+				</div>
+			</section>
+
+			<section class="functions" aria-label="Scene composables">
+				<div class="function">
+					<div>useSceneGrid.ts</div>
+					<div>Сетка</div>
+				</div>
+				<div class="function">
+					<div>useSceneMover.ts</div>
+					<div>Перемещение курсором по сцене</div>
+				</div>
+				<div class="function">
+					<div>useSceneCalibrator.ts</div>
+					<div>Калибровка (Resize) сцены после изменения размеров окна</div>
+				</div>
+				<div class="function">
+					<div>useSceneMouse.ts</div>
+					<div>Слежка за курсором и запись его координат</div>
+				</div>
+				<div class="function">
+					<div>useSceneZoom.ts</div>
+					<div>Функции масштабирования</div>
+				</div>
+				<div class="function">
+					<div>useSceneDemo.ts</div>
+					<div>Демо элементы</div>
+				</div>
+				<div class="function">useSceneHistory.ts</div>
+				<div class="function">
+					<div>useSceneContext.ts</div>
+					<div>Фоновый процесс слежки за другими полями, и определение текущей контекста команд</div>
+				</div>
+				<div class="function">useSceneSelection.ts</div>
+				<div class="function">useSceneElements.ts</div>
+			</section>
+		</section>
+	</main>
+</body>
+</html>

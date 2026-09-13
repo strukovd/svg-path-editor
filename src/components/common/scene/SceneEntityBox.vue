@@ -4,6 +4,16 @@
 
 		<g v-if="active" class="scene-entity-controls">
 			<rect
+				v-if="canMove"
+				class="move-area"
+				:x="box.x"
+				:y="box.y"
+				:width="box.width"
+				:height="box.height"
+				vector-effect="non-scaling-stroke"
+			/>
+
+			<rect
 				class="scene-entity-outline"
 				:x="box.x"
 				:y="box.y"
@@ -49,6 +59,7 @@
 <script lang="ts" setup>
 import { computed, onUnmounted, ref } from 'vue';
 import { useSceneStore } from '@/stores/SceneStore';
+import { useSceneMouse } from '@/composables/scene/useSceneMouse';
 import { moveBox, resizeBox } from '@/lib/scene/entity-box';
 import type { ResizeHandle, SceneBox, SceneEntityCapabilities } from '@/types/scene-entity';
 
@@ -86,12 +97,14 @@ const props = withDefaults(defineProps<{
 const emit = defineEmits<{
 	select: [];
 	'change-box': [box: SceneBox];
+	'change-end': [];
 	'change-opacity': [opacity: number];
 	'toggle-lock': [];
 	remove: [];
 }>();
 
 const s = useSceneStore();
+const { clientToWorld } = useSceneMouse();
 const dragState = ref<DragState | null>(null);
 const resizeHandles: ResizeHandle[] = ['nw', 'ne', 'sw', 'se'];
 
@@ -128,7 +141,7 @@ function startMove(e: MouseEvent) {
 	const svgElement = getSceneSvg(e.currentTarget);
 	if (!svgElement) return;
 
-	const start = s.clientToWorld(e.clientX, e.clientY, svgElement);
+	const start = clientToWorld(e.clientX, e.clientY, svgElement);
 	dragState.value = {
 		mode: 'move',
 		startX: start.x,
@@ -148,7 +161,7 @@ function startResize(handle: ResizeHandle, e: MouseEvent) {
 	const svgElement = getSceneSvg(e.currentTarget);
 	if (!svgElement) return;
 
-	const start = s.clientToWorld(e.clientX, e.clientY, svgElement);
+	const start = clientToWorld(e.clientX, e.clientY, svgElement);
 	dragState.value = {
 		mode: 'resize',
 		handle,
@@ -166,7 +179,7 @@ function drag(e: MouseEvent) {
 	const state = dragState.value;
 	if (!state) return;
 
-	const current = s.clientToWorld(e.clientX, e.clientY, state.svgElement);
+	const current = clientToWorld(e.clientX, e.clientY, state.svgElement);
 	const dx = current.x - state.startX;
 	const dy = current.y - state.startY;
 
@@ -181,6 +194,9 @@ function drag(e: MouseEvent) {
 }
 
 function stopDrag() {
+	if (dragState.value) {
+		emit('change-end');
+	}
 	dragState.value = null;
 	document.removeEventListener('mousemove', drag);
 	document.removeEventListener('mouseup', stopDrag);
@@ -219,6 +235,12 @@ onUnmounted(() => {
 
 <style lang="scss">
 .scene-entity-box {
+	.move-area {
+		fill: transparent;
+		stroke: transparent;
+		cursor: move;
+	}
+
 	.scene-entity-outline {
 		fill: transparent;
 		stroke: #00c2ff;

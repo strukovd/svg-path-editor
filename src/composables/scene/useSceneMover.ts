@@ -18,7 +18,7 @@ export function useSceneMover() {
 		document.addEventListener('mousemove', onMouseMove);
 		document.addEventListener('mouseup', onMouseUp);
 	}
-
+ 
 	// Системные обработчики, которые будут гоняться по документу
 	function onMouseMove(e: MouseEvent) {
 		moveCamera(e.movementX, e.movementY);

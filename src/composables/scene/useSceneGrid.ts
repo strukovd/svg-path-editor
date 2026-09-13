@@ -13,7 +13,6 @@ const MAJOR_GAP = MAJOR_LINE_FREQUENCY * DEFAULT_LINE_GAP; // расстояни
 const grid = reactive({
 	xLines: [] as number[],
 	yLines: [] as number[],
-	enabled: true,
 	majorGap: MAJOR_GAP, // каждые tick линий - более толстая линия
 	baseLineThickness: BASE_LINE_THICKNESS,
 	baseLineGap: DEFAULT_LINE_GAP,
@@ -40,7 +39,7 @@ export function useSceneGrid() {
 				s.camera.scale,
 				s.scene.width,
 				s.scene.height,
-				grid.enabled,
+				s.grid.enabled,
 			],
 			() => updateGrid(),
 			{ immediate: true }
@@ -48,6 +47,9 @@ export function useSceneGrid() {
 	}
 
 
+	/**
+	 * Возвращает толщину линии сетки
+	 */
 	function getLineThickness(n: number, scale: number): number {
 		// Определяет является ли линия толстой (major)
 		const baseWidth = grid.baseLineThickness * scale;
@@ -57,8 +59,13 @@ export function useSceneGrid() {
 		return baseWidth;
 	}
 
+	/**
+	 * Обновляет сетку
+	 */
 	function updateGrid() {
-		if (!s.scene.width) {
+		if (!s.settings.grid || !s.scene.width) {
+			grid.xLines = [];
+			grid.yLines = [];
 			return;
 		}
 

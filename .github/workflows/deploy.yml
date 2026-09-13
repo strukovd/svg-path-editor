@@ -31,7 +31,7 @@ jobs:
         run: npm run build
 
       - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v4 # Размещает сборку в репозитории
+        uses: peaceiris/actions-gh-pages@v4 # Размещает бандр на ветке gh-pages
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: dist # каталог сборки

@@ -50,6 +50,7 @@
 
 <script lang="ts" setup>
 import { computed, onMounted, onUnmounted, ref } from 'vue';
+import { useSceneMouse } from '@/composables/scene/useSceneMouse';
 import { useSceneStore } from '@/stores/SceneStore';
 import type { SceneBox } from '@/types/scene-entity';
 import SceneEntityBox from './SceneEntityBox.vue';
@@ -68,6 +69,7 @@ interface ReferenceImage {
 }
 
 const s = useSceneStore();
+const { clientToWorld } = useSceneMouse();
 const images = ref<ReferenceImage[]>([]);
 const activeId = ref<string | null>(null);
 
@@ -184,7 +186,7 @@ function onDrop(e: DragEvent) {
 	if (!svgElement || !svgElement.contains(e.target as Node)) return;
 	e.preventDefault();
 
-	const origin = s.clientToWorld(e.clientX, e.clientY, svgElement);
+	const origin = clientToWorld(e.clientX, e.clientY, svgElement);
 	void addFiles(e.dataTransfer?.files ?? null, origin);
 }
 

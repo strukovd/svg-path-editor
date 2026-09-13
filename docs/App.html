@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="ru">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>App structure</title>
+	<style>
+		:root {
+			color-scheme: dark;
+			font-family: Arial, Helvetica, sans-serif;
+			font-size: 16px;
+			color: #f1f1f1;
+			background: #222222;
+		}
+
+		* {
+			box-sizing: border-box;
+		}
+
+		body {
+			min-width: 320px;
+			min-height: 100vh;
+			margin: 0;
+			padding: 12px;
+			background: #222222;
+		}
+
+		.app {
+			width: 100%;
+			max-width: 800px;
+			margin: 0 auto;
+		}
+
+		.module-name,
+		.name,
+		.store-name {
+			font-size: 16px;
+			font-weight: 400;
+			line-height: 1;
+			text-align: center;
+		}
+
+		.module-name {
+			margin: 0 0 16px;
+		}
+
+		.component {
+			display: grid;
+			gap: 12px;
+			width: 100%;
+			padding: 14px;
+			background: #2d5d27;
+		}
+
+		.name,
+		.store-name {
+			margin: 0;
+		}
+
+		.template {
+			display: grid;
+			grid-template-rows: auto minmax(150px, 1fr) auto;
+			gap: 8px;
+			width: 100%;
+			min-height: 220px;
+		}
+
+		.layout-header,
+		.layout-footer,
+		.layout-toolbar,
+		.scene-link,
+		.layout-sidebar {
+			background: #60865b;
+		}
+
+		.layout-header,
+		.layout-footer {
+			width: 100%;
+			min-height: 24px;
+		}
+
+		.layout-main {
+			display: grid;
+			grid-template-columns: minmax(24px, 5%) minmax(0, 1fr) minmax(90px, 20%);
+			gap: 8px;
+		}
+
+		.scene-link {
+			display: grid;
+			place-items: center;
+			width: 100%;
+			padding: 16px;
+			color: inherit;
+			text-decoration: none;
+		}
+
+		.scene-link:hover {
+			background: #6d9468;
+		}
+
+		.scene-link:focus-visible {
+			outline: 2px solid #f1f1f1;
+			outline-offset: -2px;
+		}
+
+		.store {
+			display: grid;
+			gap: 12px;
+			width: 100%;
+			padding: 12px;
+			background: #77843b;
+		}
+
+		.store-items {
+			display: grid;
+			gap: 9px;
+		}
+
+		.store-item {
+			display: grid;
+			place-items: center;
+			min-height: 35px;
+			padding: 8px 12px;
+			background: #ad8d24;
+			text-align: center;
+		}
+
+		@media (max-width: 520px) {
+			.component {
+				padding: 10px;
+			}
+
+			.layout-main {
+				grid-template-columns: 24px minmax(0, 1fr) minmax(72px, 20%);
+				gap: 5px;
+			}
+		}
+	</style>
+</head>
+<body>
+	<main class="app">
+		<h1 class="module-name">App</h1>
+
+		<section class="component">
+			<section class="name">MainPage.vue</section>
+
+			<section class="template">
+				<header class="layout-header"></header>
+				<div class="layout-main">
+					<div class="layout-toolbar"></div>
+					<a class="scene-link" href="./Scene.html">Scene</a>
+					<div class="layout-sidebar"></div>
+				</div>
+				<footer class="layout-footer"></footer>
+			</section>
+
+			<section class="store">
+				<h2 class="store-name">AppStore.ts</h2>
+				<div class="store-items">
+					<div class="store-item">loading</div>
+					<div class="store-item">menu</div>
+					<div class="store-item">panels</div>
+					<div class="store-item">footer</div>
+				</div>
+			</section>
+		</section>
+	</main>
+</body>
+</html>

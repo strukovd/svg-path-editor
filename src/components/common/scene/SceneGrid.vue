@@ -1,5 +1,5 @@
 <template>
-	<g v-if="grid.enabled" class="grid">
+	<g v-if="s.grid.enabled" class="grid">
 		<!-- Две жирные линии по 0,0 сетки (Центральный крест) -->
 		<line class="grid" x1="0" y1="-100%" x2="0" y2="200%" :stroke-width="grid.crossLineThickness * s.camera.scale"/>
 		<line class="grid" x1="-100%" y1="0" x2="200%" y2="0" :stroke-width="grid.crossLineThickness * s.camera.scale"/>
@@ -30,7 +30,7 @@
 
 <script lang="ts" setup>
 import { useSceneStore } from '@/stores/SceneStore';
-import { useSceneGrid } from '../../../composables/scene/useSceneGrid';
+import { useSceneGrid } from '@/composables/scene/useSceneGrid';
 
 const s = useSceneStore();
 const { grid, getLineThickness } = useSceneGrid();
