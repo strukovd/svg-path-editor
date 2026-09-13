@@ -1,7 +1,7 @@
 <template>
 	<section id="main-page">
 		<header>
-			<!-- TODO: Добавить menu -->
+			<AppMenu/>
 		</header>
 		<main class="main-screen">
 			<ToolBar/>
@@ -15,6 +15,7 @@
 </template>
 
 <script lang="ts" setup>
+import AppMenu from '@/components/common/base/AppMenu.vue';
 import SceneComponent from '@/components/common/scene/SceneComponent.vue';
 import PropsBar from '../common/scene/PropsBar.vue';
 import ToolBar from '../common/scene/ToolBar.vue';
